@@ -1,9 +1,9 @@
 <script setup lang="ts">
     import { ref,onMounted, inject } from 'vue';
-    import type { generateAlert, IHardskillsGroupsData} from '@/utils/interfaces'
+    import type { ErrorResponse, generateAlert, IHardskillsGroupsData} from '@/utils/interfaces'
     import { getHardskillsGroupsData,createHardskillsGroups } from '@/services/hardskillsGroupsServices'
-    import { getHardskillsDataByGroup,createHardskills } from '@/services/hardskillsServices';
-    import { VueDraggableNext } from 'vue-draggable-next'
+    import { getHardskillsDataByGroup,createHardskills, changeOrder } from '@/services/hardskillsServices';
+    import { VueDraggableNext as draggable } from 'vue-draggable-next'
     const generateAlert:generateAlert = inject('generateAlert')!
 
     const hardskillsGroupsData = ref<IHardskillsGroupsData[] | null>(null)
@@ -127,6 +127,19 @@
         }
     }
 
+    async function handleSort(e:Event,group:IHardskillsGroupsData){
+        const indexes = ((e as unknown) as {moved:{newIndex:number,oldIndex:number}}).moved
+        
+        try {
+            await changeOrder(group.hardskills![indexes.newIndex]!.id,{groupId:group.id,newIndex:indexes.newIndex,oldIndex:indexes.oldIndex});
+        } catch (error) {
+            if((error as ErrorResponse)){
+                generateAlert(false,'Algo deu errado')
+                console.log((error as ErrorResponse).response.data.error)
+            }
+        }
+    }
+
 </script>
     
 <template>
@@ -185,9 +198,11 @@
                                 </button>
                             </div>
                         </form>
-                    </div>         
-                        <template v-if="(group.hardskills && group.hardskills!.length > 0)">  
-                            <div class="containerItemSingle flex items-center justify-between pl-6 py-1" v-for="hardskill in group.hardskills" :key="hardskill.id">
+                    </div>  
+                    <ClientOnly>      
+                        <draggable @change="handleSort($event,group)" v-if="(group.hardskills && group.hardskills!.length > 0)" v-model="group.hardskills" group="hardskills" :item-key="group.id">  
+                            <template v-for="hardskill in group.hardskills" :key="hardskill.id">
+                                <div class="containerItemSingle flex items-center justify-between pl-6 py-1"  >
                                 <div class="flex items-center gap-2">
                                     <UPopover mode="click" arrow :content="{align:'center',side:'bottom'}" :ui="{arrow:'fill-gray-200 '}">
                                         
@@ -220,8 +235,10 @@
                                     <button class=" hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="bi-trash-fill" class="fill-red-600" scale=".9"/></button>
                                     <button class=" hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale=".9"/></button>
                                 </div>
-                            </div>   
-                        </template>
+                                </div>   
+                            </template>
+                        </draggable>
+                    </ClientOnly> 
                     </div>
                 </div>
             

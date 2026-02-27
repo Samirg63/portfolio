@@ -30,3 +30,19 @@ export async function createHardskills(itemData:{name:string},groupId:number){
         }
     }
 }
+
+export async function changeOrder(id:number,body:{newIndex:number,oldIndex:number,groupId:number}){
+    const edit:IHttpResponse = await axios.put(url+`/order/${id}`,JSON.stringify(body),{
+        headers:{'Content-Type':'application/json'}
+    })
+
+    if(edit.data.status == 200){
+        return edit.data;
+    }else{
+        if(typeof edit.data.error == 'string'){
+            throw new Error(edit.data.error)
+        }else{
+            throw edit.data.error
+        }
+    }
+}
