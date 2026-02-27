@@ -1,0 +1,93 @@
+<script setup lang="ts">
+    import { ref,onMounted, inject } from 'vue';
+    import { getTheme,handleTheme } from '@/utils/helpers';
+    import { useRoute } from 'vue-router';
+import type { generateAlert, IUserData } from '@/utils/interfaces';
+import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userService';
+
+    const route = useRoute()
+    const onAdmin = ref((route.path.split('/')[1] == 'admin'))
+    const curriculumInput = ref<File | null>(null);
+    const generateAlert:generateAlert = inject('generateAlert')!
+    const userData = ref<IUserData>({} as IUserData)
+
+    const isDarkMode = ref<boolean>(getTheme())
+    onMounted(async()=>{ 
+        userData.value = await getUserData();
+        handleTheme(getTheme())
+    })
+
+    function generateDownloadUrl(){
+        if(userData.value.curriculum && JSON.parse(userData.value.curriculum)){
+            const arr = JSON.parse(userData.value.curriculum).url.split('/')
+            arr.splice(0,1,'https:')
+            arr.splice(arr.length-2,0,'fl_attachment')
+            return arr.join('/')
+            
+        }
+        else{
+            return ''
+        }
+    }
+
+    function switchTheme(){
+        isDarkMode.value = !isDarkMode.value
+        handleTheme(isDarkMode.value)      
+    }
+
+    async function updateFile(e:Event){
+        const target = e.target as HTMLInputElement
+        if(target.files && target.files.length > 0){
+            curriculumInput.value = target.files[0]!
+
+            const formData = new FormData();
+            formData.append('file',curriculumInput.value)
+            try {
+                await editCurriculum(formData,userData.value!.id)
+
+                const newCurriculum = (await getUserKeyData('curriculum') as {curriculum:string}).curriculum ;
+                
+                
+                userData.value!.curriculum = newCurriculum
+                generateAlert(true, 'Curriculo enviado com sucesso!');
+                curriculumInput.value = null;
+            } catch (error) {
+                console.log(error)
+                generateAlert(false, 'Erro ao enviar curriculo');
+            }
+        }else{
+            curriculumInput.value = null
+        }
+
+    }
+
+</script>
+
+<template>
+   <!-- contem: switch de tema light/dark + download de curriculo -->
+    <header class="px-4 py-6 w-full border-b dark:border-zinc-700 border-gray-400 flex items-center space-x-4 justify-end">
+        <a v-if="!onAdmin && userData.curriculum" :href="generateDownloadUrl()" download="Curriculo" class="border-b border-zinc-500">Meu Curriculo</a>
+        <div v-else-if="onAdmin">
+            <input type="file" @change="updateFile($event)" id="inputFile" accept=".pdf,.doc,.docx,.txt" hidden/>
+            <label for="inputFile" class="border-b border-zinc-500 cursor-pointer">Enviar Curriculo</label>
+        </div>
+        
+        <button @click="switchTheme" class="cursor-pointer w-11 h-6 dark:bg-gray-200 bg-zinc-800 rounded-full px-0.5 relative" >
+            <div class="dot w-5 h-5 dark:bg-zinc-700 bg-gray-200 rounded-full duration-200"
+            :class="(isDarkMode) && 'ml-5'"
+            ></div> 
+            <div class="absolute top-0.75 right-0.75 flex items-center justify-between w-full pl-1.5">
+                <v-icon name="bi-sun-fill"  scale=".9" fill="#27272a"/>
+                <v-icon name="bi-moon-fill"  scale=".9" fill="#e5e7eb"/>
+            </div>
+            
+        </button>
+    </header>
+</template>
+
+<style scoped>
+    .dot,button{
+        transition: .2s !important;
+    }
+
+</style>
