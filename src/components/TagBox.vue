@@ -14,8 +14,7 @@
 </script>
 
 <template >
-    <div id="tagWrapper" @click="$emit('tagClick')" :style="{backgroundColor: bgcolor,scale:scale}" class="relative select-none flex items-center py-1 px-3 rounded-md duration-200 "
-    
+    <div id="tagWrapper" @click="$emit('tagClick')" :style="{backgroundColor: bgcolor,scale:scale}" class="relative select-none flex items-center py-1 px-3 rounded-md duration-200 min-w-24 "
     :class="{'cursor-pointer': pointer, 'hover:opacity-70':(type != 'removable')}"
     >
         <p class="text-gray-200">{{ name }}</p>

@@ -43,7 +43,7 @@ import AlertMessage from './components/AlertMessage.vue';
 
 <template>
   <UApp :tooltip="{delayDuration:200}">
-    <section class="h-screen dark:bg-zinc-800 bg-gray-300 dark:text-gray-200 text-zinc-800 relative">
+    <section class="h-screen dark:bg-zinc-800 bg-gray-300 dark:text-gray-200 text-zinc-800 relative w-full">
       <AlertMessage/>
       <routerView/>
     </section>

@@ -12,10 +12,15 @@ import AdminHome from '@/components/admin/AdminHome.vue'
 import AdminProjects from '@/components/admin/AdminProjects.vue'
 import AdminTags from '@/components/admin/AdminTags.vue'
 import AdminHardskills from '@/components/admin/AdminHardskills.vue'
+import ForgotPassword from '@/components/ForgotPassword.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path:'/forgotPassword',
+      component:ForgotPassword
+    },
     {
       path:'/',
       component:DefaultLayout,

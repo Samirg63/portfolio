@@ -31,6 +31,23 @@ export async function createHardskills(itemData:{name:string},groupId:number){
     }
 }
 
+export async function editHardskill(data:IHardskillsData){
+    const edit = await axios.put(url+`/${data.id}`,JSON.stringify(data),{
+        headers:{
+            'Content-Type':'application/json'
+        }
+    });
+    if(edit.data.status == 200){
+        return edit.data;
+    }else{
+        if(typeof edit.data.error == 'string'){
+            throw new Error(edit.data.error)
+        }else{
+            throw edit.data.error
+        }
+    }
+}
+
 export async function changeOrder(id:number,body:{newIndex:number,oldIndex:number,groupId:number}){
     const edit:IHttpResponse = await axios.put(url+`/order/${id}`,JSON.stringify(body),{
         headers:{'Content-Type':'application/json'}
@@ -43,6 +60,20 @@ export async function changeOrder(id:number,body:{newIndex:number,oldIndex:numbe
             throw new Error(edit.data.error)
         }else{
             throw edit.data.error
+        }
+    }
+}
+
+export async function deleteHardskill(id:number){
+    const deleteSkill = await axios.delete(url+`/${id}`);
+
+    if(deleteSkill.data.status == 200){
+        return deleteSkill.data;
+    }else{
+        if(typeof deleteSkill.data.error == 'string'){
+            throw new Error(deleteSkill.data.error)
+        }else{
+            throw deleteSkill.data.error
         }
     }
 }

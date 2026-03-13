@@ -2,10 +2,10 @@
 <script setup lang="ts">
     import { RouterLink } from 'vue-router';
     import { inject, onMounted, ref } from 'vue';
-    import { login } from '@/services/authServices';
+    import { generateToken, login } from '@/services/authServices';
     import router from '@/router';
     import Cookies from 'js-cookie'
-import type { ErrorResponse, generateAlert } from '@/utils/interfaces';
+    import type { ErrorResponse, generateAlert } from '@/utils/interfaces';
 
     interface IuserData{email:string,password:string}
     
@@ -14,7 +14,8 @@ import type { ErrorResponse, generateAlert } from '@/utils/interfaces';
     const userData = ref<IuserData>({email:'',password:''})
     const maintainConnection = ref<boolean>(false) 
     const passwordVisibility = ref<boolean>(false)
-
+    const checkCodeModal = ref<boolean>(false);
+    const secretCode = ref<string>('');
     onMounted(()=>{
         if(JSON.parse(localStorage.getItem('user')!)){
             router.push('/admin')
@@ -51,6 +52,26 @@ import type { ErrorResponse, generateAlert } from '@/utils/interfaces';
         e.preventDefault()
         passwordVisibility.value = !passwordVisibility.value
     }
+
+    function handleSecretCodeModal(e:Event){
+        e.preventDefault();
+        checkCodeModal.value = true;
+    }
+
+    async function handleForgotPassword(){
+        try {
+            const token:{token:string,id:string} = await generateToken(secretCode.value);
+            if(token){
+                router.push(`/forgotPassword?token=${token.token}&&id=${token.id}`)
+            }
+        } catch(error:unknown){
+            if((error as ErrorResponse).response.data.statusCode == "WRONG_CODE"){
+                generateAlert(false,"Código invalido!")
+            }else{
+                generateAlert(false,"Erro no servidor!")
+            }
+        }
+    }
 </script>
 
 <template>
@@ -76,13 +97,27 @@ import type { ErrorResponse, generateAlert } from '@/utils/interfaces';
                             <input type="checkbox" name="maintainConnection" v-model="maintainConnection">
                             <span>Mantenha-me conectado</span>
                         </div>
-                        <a href="" class="text-left hover:underline cursor-pointer">Esqueci minha senha.</a>
+                        <button @click="handleSecretCodeModal($event)"  class="text-left hover:underline cursor-pointer">Esqueci minha senha.</button>
                     </div>
                 </div>
                 <input @click="handleSubmit($event)" type="submit" value="Conecte-se" class="dark:text-gray-200 text-zinc-800 dark:bg-zinc-800 bg-gray-200 cursor-pointer py-1 px-4 rounded-lg dark:hover:bg-zinc-900 hover:bg-gray-300 duration-200">
             </form>
         </div>
     </section>
+
+    <UModal v-model:open="checkCodeModal" class="p-4 bg-zinc-800">
+        <template #content>
+            <div>
+                <h5>Insira a palavra chave de administrador:</h5>
+                <input v-model="secretCode" type="text" placeholder="Palavra chave..." class="bg-gray-200 rounded-sm w-full py-1 px-2 placeholder:text-zinc-700/70 text-zinc-900">
+                <div class="flex items-center gap-2 mt-4">
+                    <button @click="()=>{checkCodeModal = false}" class="w-1/2 duration-200 cursor-pointer py-1 rounded-sm bg-gray-200 hover:bg-gray-300 text-zinc-700">Cancelar</button>
+                    <button @click="handleForgotPassword" class="w-1/2 duration-200 cursor-pointer py-1 rounded-sm bg-fuchsia-700 hover:bg-fuchsia-800">Confirmar</button>
+                </div>
+            </div>
+        </template>
+    </UModal>
+
 </template>
 
 <style scoped>

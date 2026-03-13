@@ -55,16 +55,17 @@ export async function editPortrait(formdata:FormData,id:number){
     //upload
     try {
         //delete past image (if it exists)
-         const imageData = (await getAboutKeyData('image') as {image:string | null}).image;
-         if(imageData){
-             const imageId = JSON.parse(imageData).id
-     
-             
-                 await destroyFile(imageId)
-             
-         }
-        
         const upload:{url:string,id:string} = await uploadFile(formdata)
+
+        const imageData = (await getAboutKeyData('image') as {image:string | null}).image;
+        if(imageData){
+            const imageId = JSON.parse(imageData).id
+    
+            
+                await destroyFile(imageId)
+            
+        }
+        
         const edit = await editAboutData({id:id,image:JSON.stringify({url:upload.url,id:upload.id})} as IAboutData)
         return edit;
     } catch (error) {
@@ -72,4 +73,24 @@ export async function editPortrait(formdata:FormData,id:number){
     }
     
     
+}
+
+export async function removeImage(id:number,imageId:string){
+     try {
+         const deleteImage = await destroyFile(imageId);
+        if(deleteImage){
+            const destroy:IHttpResponse = await axios.delete(url+`/image/${id}`)
+            if(destroy.data.status == 200){
+                return destroy.data.body as IAboutData
+            }else{
+                if(typeof destroy.data.error == 'string'){
+                    throw new Error(destroy.data.error)
+                }else{
+                    throw destroy.data.error
+                }
+    }
+        }
+     } catch (error) {
+         throw error
+     }
 }

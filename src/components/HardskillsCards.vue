@@ -2,12 +2,15 @@
 
 import { ref,onMounted } from 'vue';
 import HardSkillCardSingle from './HardSkillCardSingle.vue';
+import type { ErrorResponse, IHardskillsGroupsData } from '@/utils/interfaces';
+import { getHardskillsGroupsData } from '@/services/hardskillsGroupsServices';
 
-const target = ref(null)
-const targetIsVisible = ref(false)
-let observer;
+    const target = ref(null)
+    const targetIsVisible = ref(false)
+    let observer;
+    const hardskillsGroupsData = ref<IHardskillsGroupsData[] | null>(null)
 
-onMounted(()=>{
+onMounted(async ()=>{
     observer = new IntersectionObserver(
     (entries) => {
       
@@ -23,7 +26,18 @@ onMounted(()=>{
 
   if (target.value) {
     observer.observe(target.value);
-  }
+  }      
+        try {
+            hardskillsGroupsData.value = await getHardskillsGroupsData();
+            
+            
+            
+        } catch (error:unknown) {   
+            if((error as ErrorResponse)){
+            console.log((error as ErrorResponse).response.data.error)
+        }
+        }
+  
 })
 
 </script>
@@ -31,11 +45,11 @@ onMounted(()=>{
 <template>
     <section class="p-12">
         <h2 class="font-semibold text-3xl">Minhas Especialidades:</h2>
-        <div class="grid grid-cols-4 gap-5 mt-6" ref="target">
-            <TransitionGroup name="hardskillList">
-                <HardSkillCardSingle v-if="targetIsVisible" key="0" id="box1"/>
-                <HardSkillCardSingle v-if="targetIsVisible" key="1" id="box2"/>
-                <HardSkillCardSingle v-if="targetIsVisible" key="2" id="box3"/>
+        <div class="grid grid-cols-4 max-md:grid-cols-2 max-sm:grid-cols-1 gap-5 mt-6" ref="target">
+            <TransitionGroup name="hardskillList" >
+                <template v-for="(skillGroup,index) in hardskillsGroupsData" :key="index">
+                    <HardSkillCardSingle v-if="targetIsVisible" :data="skillGroup" :id="'box'+index"/>
+                </template>
             </TransitionGroup>
         </div>
     </section>
@@ -60,5 +74,9 @@ onMounted(()=>{
 
     #box3{
         transition-delay: 0.4s;
+    }
+
+    #box4{
+        transition-delay: 0.6s;
     }
 </style>

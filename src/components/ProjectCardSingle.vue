@@ -15,20 +15,12 @@
             <h3 class="font-semibold">Weather app</h3>
             <p class="text-sm ">{{ formatDescription(description) }}</p>
         </div>
-        <div class="completed text-center   py-1 rounded-bl-[inherit] rounded-br-[inherit]">
-            <span >Concluído</span>
-        </div>
+        
     </div>
 </template>
 
 <style scoped>
-    .completed{
-        background-color: #9ae60080;
-    }
-
-    .onGoing{
-        background-color: rgba(43, 127, 255,.5);
-    }
+    
 
     .box:hover{
         filter:drop-shadow(0 0 4px #59168b);

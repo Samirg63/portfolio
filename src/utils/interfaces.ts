@@ -1,3 +1,5 @@
+import type { Ref } from "vue"
+
 export interface IAuthData{
     email:string,
     password:string
@@ -43,6 +45,12 @@ export interface IHardskillsData{
     hardskillsGroupId:number
 }
 
+export interface IHardskillsCoordinates {
+        groupIndex:number,
+        hardSkillsIndex?:number
+}
+
+
 export interface ITagsGroupsData{
     id:number,
     name:string,
@@ -57,6 +65,11 @@ export interface ITagsData{
     selected?:boolean
 }
 
+export interface ITagsCoordinates {
+        groupIndex:number,
+        tagIndex?:number
+}
+
 export interface IHttpResponse{
     data:{
         status:number,
@@ -69,6 +82,7 @@ export interface IProjectsData{
     name:string,
     desc:string,
     images:string,
+    coverImage:number,
     githubLink?:string,
     projectLink?:string,
     tags:ITagsData[]
@@ -88,6 +102,7 @@ export interface IModalData{
     githubLink?:string,
     projectLink?:string
     images:IModalImage[],
+    coverImage:number,
     tags:{
         id:number,
         tagGroupId:number,
@@ -104,6 +119,13 @@ export interface IAlert{
     message:string
 }
 
+
+//Provides
 export type generateAlert = (success:boolean,message:string)=>void;
 
 export type ErrorResponse = {response:{data:{error:string,statusCode:string}}};
+
+export interface IMenuDrawer{
+    handleDrawer:()=>void;
+    drawerOpen:Ref<boolean,boolean>
+}

@@ -7,7 +7,7 @@ import { inject, type Ref } from 'vue';
 
 <template>
     <div class="fixed right-4 flex flex-col gap-2 top-21 z-99">
-        <div v-for="alert in alerts" :key="alert.key" class="alertSingle border inline-flex items-center gap-2 py-1 px-2 rounded-sm bg-zinc-800 opacity-90 "
+        <div v-for="alert in alerts" :key="alert.key" class="alertSingle border inline-flex items-center gap-2 py-1 px-2 rounded-sm dark:bg-zinc-800 bg-gray-200 opacity-90 "
         :class="{
             'border-green-500 text-green-600':alert.success,
             'border-red-500 text-red-600':!alert.success
