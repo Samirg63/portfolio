@@ -12,7 +12,6 @@ import { onMounted, ref } from 'vue';
         try {
             aboutData.value = await getAboutData();
             userImage.value = await getUserKeyData('image') as unknown as {image:string}
-            console.log(userImage.value)
             
         } catch (error:unknown) {
             if((error as {response:{data:{error:string}}})){

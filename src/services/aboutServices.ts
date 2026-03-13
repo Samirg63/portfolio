@@ -1,10 +1,9 @@
 import type { IHttpResponse, IAboutData } from "@/utils/interfaces";
 import axios from "axios";
 import { destroyFile, uploadFile } from "./filesServices";
-import dotevn from 'dotenv'
-dotevn.config()
 
-const url:string = process.env.API_URL+'/about'
+
+const url:string = import.meta.env.VITE_API_URL+'/about'
 
 export async function getAboutData():Promise<IAboutData>{
     const data:IHttpResponse = await axios.get(url);

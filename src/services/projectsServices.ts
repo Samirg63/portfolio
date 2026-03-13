@@ -1,10 +1,9 @@
 import type { IHttpResponse, IModalData, IModalImage, IProjectsData } from "@/utils/interfaces";
 import axios from "axios";
 import { destroyMany, uploadFiles } from "./filesServices";
-import dotevn from 'dotenv'
-dotevn.config()
 
-const url:string = process.env.API_URL+'/projects'
+
+const url:string = import.meta.env.VITE_API_URL+'/projects'
 
 export async function getProjectsData():Promise<IProjectsData[]>{
     const data:IHttpResponse = await axios.get(url);

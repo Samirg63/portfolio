@@ -1,9 +1,8 @@
 import type { IHttpResponse, IContactData } from "@/utils/interfaces";
 import axios from "axios";
-import dotevn from 'dotenv'
-dotevn.config()
 
-const url:string = process.env.API_URL+'/contact'
+
+const url:string = import.meta.env.VITE_API_URL+'/contact'
 
 export async function getContactData():Promise<IContactData>{
     const data:IHttpResponse = await axios.get(url);

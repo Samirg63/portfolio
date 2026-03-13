@@ -1,9 +1,8 @@
 import type { IHttpResponse } from "@/utils/interfaces";
 import axios from "axios";
-import dotevn from 'dotenv'
-dotevn.config()
 
-const url:string = process.env.API_URL+'/files'
+
+const url:string = import.meta.env.VITE_API_URL+'/files'
 
 
 export async function uploadFile(formdata:FormData){
