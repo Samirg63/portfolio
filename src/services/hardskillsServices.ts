@@ -1,7 +1,9 @@
 import type { IHttpResponse, IHardskillsData } from "@/utils/interfaces";
 import axios from "axios";
+import dotevn from 'dotenv'
+dotevn.config()
 
-const url:string = 'http://localhost:3000/hardskills'
+const url:string = process.env.API_URL+'/hardskills'
 
 export async function getHardskillsDataByGroup(groupId:number):Promise<IHardskillsData[]>{
     const data:IHttpResponse = await axios.get(url+`/${groupId}`);

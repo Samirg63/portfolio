@@ -1,8 +1,10 @@
 import type { IHttpResponse, IUserData } from "@/utils/interfaces";
 import axios from "axios";
 import { destroyFile, uploadFile } from "./filesServices";
+import dotevn from 'dotenv'
+dotevn.config()
 
-const url:string = 'http://localhost:3000/user'
+const url:string = process.env.API_URL+'/user'
 
 export async function getUserData():Promise<IUserData>{
     const data:IHttpResponse = await axios.get(url);

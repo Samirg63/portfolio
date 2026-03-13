@@ -1,7 +1,9 @@
 import type { IHttpResponse, ITagsGroupsData } from "@/utils/interfaces";
 import axios from "axios";
+import dotevn from 'dotenv'
+dotevn.config()
 
-const url:string = 'http://localhost:3000/tagsGroups'
+const url:string = process.env.API_URL+'/tagsGroups'
 
 export async function getTagsGroupsData():Promise<ITagsGroupsData[]>{
     const data:IHttpResponse = await axios.get(url);

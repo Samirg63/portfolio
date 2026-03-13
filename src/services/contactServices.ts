@@ -1,7 +1,9 @@
 import type { IHttpResponse, IContactData } from "@/utils/interfaces";
 import axios from "axios";
+import dotevn from 'dotenv'
+dotevn.config()
 
-const url:string = 'http://localhost:3000/contact'
+const url:string = process.env.API_URL+'/contact'
 
 export async function getContactData():Promise<IContactData>{
     const data:IHttpResponse = await axios.get(url);

@@ -24,7 +24,6 @@
     const showingTags = ref<ITagsData[]>([] as ITagsData[])
     const action = ref<'create'|'edit'>('create');
     const hasEdit = ref<boolean>(false);
-    const modalImageIndex = ref<number>(0)
 
     //this const bellow serve to don't trigger the ConfirmExit modal when first open an project to edit
     const descEditControl = ref<boolean>(true);

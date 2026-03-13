@@ -2,8 +2,10 @@ import type { IAuthData,IHttpResponse } from "@/utils/interfaces";
 import axios from "axios";
 import Cookies from "js-cookie";
 import router from '@/router';
+import dotevn from 'dotenv'
+dotevn.config()
 
-const url:string = 'http://localhost:3000/auth'
+const url:string = process.env.API_URL+'/auth'
 
 export async function login(data:IAuthData){
 

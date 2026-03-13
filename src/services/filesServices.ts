@@ -1,8 +1,9 @@
 import type { IHttpResponse } from "@/utils/interfaces";
 import axios from "axios";
+import dotevn from 'dotenv'
+dotevn.config()
 
-
-const url:string = 'http://localhost:3000/files'
+const url:string = process.env.API_URL+'/files'
 
 
 export async function uploadFile(formdata:FormData){
