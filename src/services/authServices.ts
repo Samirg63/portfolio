@@ -6,14 +6,23 @@ import router from '@/router';
 
 const url:string = import.meta.env.VITE_API_URL+'/auth'
 
-export async function login(data:IAuthData){
+export async function login(data:IAuthData | string){
+    let login:IHttpResponse;
+    if(typeof data == 'string'){
+        login = await axios.post(url+'/login',{},{
+            headers:{
+                'Authorization': `bearer ${data}`
+            }
+        })
+    }else{
 
-    
-    const login:IHttpResponse = await axios.post(url+'/login',JSON.stringify(data),{
-        headers:{
-            'Content-Type':'application/json'
-        }
-    })
+        
+        login = await axios.post(url+'/login',JSON.stringify(data),{
+            headers:{
+                'Content-Type':'application/json'
+            }
+        })
+    }
 
     if( login.data.status == 200){
         return login.data.body
@@ -21,7 +30,6 @@ export async function login(data:IAuthData){
         if(typeof login.data.error == 'string'){
             throw new Error(login.data.error)
         }else{
-            console.log('aa')
             throw login.data.error
         }
     }

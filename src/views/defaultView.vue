@@ -4,6 +4,13 @@
   import AboutMe from '../components/AboutMe.vue';
   import HardskillsCards from '../components/HardskillsCards.vue';
   import ContactMe from '../components/ContactMe.vue';
+  import { onMounted } from 'vue';
+import { getUserKeyData } from '@/services/userService';
+
+  onMounted(async ()=>{
+    const name:string = (await getUserKeyData('name')).name as string
+    document.title = 'Portfolio - '+name
+  })
 </script>
 
 <template> 
