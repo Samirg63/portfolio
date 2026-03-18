@@ -1,8 +1,9 @@
 <script setup lang="ts">
     import { ref,onMounted, inject } from 'vue';
     import { getTheme,handleTheme } from '@/utils/helpers';
-import type { generateAlert, IMenuDrawer, IUserData } from '@/utils/interfaces';
-import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userService';
+    import type { generateAlert, IMenuDrawer, IUserData } from '@/utils/interfaces';
+    import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userService';
+import { VueSpinnerDots } from 'vue3-spinners';
 
 
     
@@ -11,16 +12,19 @@ import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userSer
     }>()
     const {handleDrawer}:IMenuDrawer = inject('menuDrawer')!
     const curriculumInput = ref<File | null>(null);
+    const loadingUpload = ref<boolean>(false)
     const generateAlert:generateAlert = inject('generateAlert')!
     const userData = ref<IUserData>({} as IUserData)
     const isDarkMode = ref<boolean>(getTheme())
-
+    const logged = ref<boolean>(Boolean(localStorage.getItem('user')!))
     
-
-
-    onMounted(async()=>{ 
-        userData.value = await getUserData();
-        handleTheme(getTheme())
+        
+        
+        
+        
+        onMounted(async()=>{ 
+            userData.value = await getUserData();
+            handleTheme(getTheme())
     })
 
     function generateDownloadUrl(){
@@ -42,6 +46,8 @@ import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userSer
     }
 
     async function updateFile(e:Event){
+        loadingUpload.value = true;
+        
         const target = e.target as HTMLInputElement
         if(target.files && target.files.length > 0){
             curriculumInput.value = target.files[0]!
@@ -64,7 +70,7 @@ import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userSer
         }else{
             curriculumInput.value = null
         }
-
+        loadingUpload.value = false;
     }
 
     
@@ -81,7 +87,8 @@ import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userSer
             <a v-if="!props.onAdmin && userData.curriculum" :href="generateDownloadUrl()" download="Curriculo" class="border-b border-zinc-500">Meu Curriculo</a>
             <div v-else-if="props.onAdmin">
                 <input type="file" @change="updateFile($event)" id="inputFile" accept=".pdf,.doc,.docx,.txt" hidden/>
-                <label for="inputFile" class="border-b border-zinc-500 cursor-pointer">Enviar Curriculo</label>
+                <label v-if="!loadingUpload" for="inputFile" class="border-b border-zinc-500 cursor-pointer">Enviar Curriculo</label>
+                <vue-spinner-dots v-else size="24" class="mx-12"/>
             </div>
             
             <button @click="switchTheme" class="cursor-pointer w-11 h-6 dark:bg-gray-200 bg-zinc-800 rounded-full px-0.5 relative" >
@@ -93,9 +100,11 @@ import {  editCurriculum, getUserData, getUserKeyData } from '@/services/userSer
                     <v-icon name="bi-moon-fill"  scale=".9" fill="#e5e7eb"/>
                 </div>
             </button>
-            <button v-if="props.onAdmin" class="mt-1" @click="()=>{$emit('logout')}">
+            <button v-if="props.onAdmin" class="mt-1" @click="()=>{logged=false;$emit('logout')}">
                 <v-icon name="io-exit" scale="1.2" class="cursor-pointer stroke-gray-200"/>
             </button>
+            <a href="/" v-if="props.onAdmin"><v-icon name="io-home" class="dark:fill-gray-200 fill-zinc-700" scale="1.2"/></a>
+            <a href="/admin" v-else-if="logged"><v-icon name="md-spacedashboard" class="dark:fill-gray-200 fill-zinc-700" scale="1.2"/></a>
         </div>
         </header>
 </template>

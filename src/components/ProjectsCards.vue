@@ -7,8 +7,9 @@
     import type { ErrorResponse, IModalData, IProjectsData, ITagsData, ITagsGroupsData } from '@/utils/interfaces';
     import { getProjectsBytag, getProjectsData } from '@/services/projectsServices';
     import { getTagsGroupsData } from '@/services/tagsGroupsServices';
-import { formatLink } from '@/utils/helpers';
-import { searchTags } from '@/services/tagsServices';
+    import { formatLink } from '@/utils/helpers';
+    import { searchTags } from '@/services/tagsServices';
+    import ProjectsPlaceholder from './placeholders/ProjectsPlaceholder.vue';
 
     const toggleOverflow = ref<boolean>(false)
 
@@ -292,7 +293,7 @@ import { searchTags } from '@/services/tagsServices';
                 </div>
             </template>
         </UPopover>
-        <div 
+        <div v-if="projectsData.length" 
         :class="(toggleOverflow) && 'overflowOn'"
         class="grid grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1 gap-8  max-h-200 overflow-y-auto overflow-x-visible p-4">
             <AdminProjectSingle v-for="project in projectsData" :key="project.id" :id="project.id!" :desc="project.desc" :coverIndex="project.coverImage" :images="project.images" :name="project.name"  @click="toggleModal(project.id!)"/>
@@ -300,6 +301,7 @@ import { searchTags } from '@/services/tagsServices';
             
             
         </div>
+        <ProjectsPlaceholder v-else/>
     </section>
 
 

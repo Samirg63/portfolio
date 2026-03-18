@@ -13,10 +13,12 @@
     import { createProject, deleteProject, destroyManyImages, editProject, getProjectsData,uploadProjectImages } from '@/services/projectsServices';
     import { getTagsGroupsData } from '@/services/tagsGroupsServices';
     import { searchTags } from '@/services/tagsServices';
+import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
 
     
 
     const projectsData = ref<IProjectsData[]>([] as IProjectsData[])
+    const projectsLoading = ref<boolean>(false)
     const modalVisibility = ref<boolean>(false)
     const modalData = ref<IModalData>({} as IModalData)
     const allTags = ref<ITagsGroupsData[]>([] as ITagsGroupsData[])
@@ -41,8 +43,11 @@
 
     onMounted(async ()=>{
         try {
+            projectsLoading.value = true
             projectsData.value = await getProjectsData();
             allTags.value = await getTagsGroupsData();
+
+            projectsLoading.value = false;
         } catch (error:unknown) {
             if((error as ErrorResponse)){
             console.log((error as ErrorResponse).response.data.error)
@@ -459,14 +464,15 @@
 <template>
     <section >
         <div class="w-full border-b py-2 mb-4">
-            <button @click="toggleModal()" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg">
+            <button @click="toggleModal()" :disabled="projectsLoading" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg">
                 <v-icon name="bi-plus-circle-fill" class="fill-zinc-800" scale="1.5"/>
                 <span class="font-semibold">Novo projeto</span>
             </button>     
         </div>
-        <div class="grid grid-cols-3 gap-8 max-md:grid-cols-2 max-sm:grid-cols-1">
+        <div class="grid grid-cols-3 gap-8 max-md:grid-cols-2 max-sm:grid-cols-1" v-if="!projectsLoading">
             <AdminProjectSingle @click="toggleModal(data.id)" v-for="data in projectsData" :key="data.id" :images="data.images" :coverIndex="data.coverImage" :name="data.name" :desc="data.desc" :id="data.id!"/>
         </div>
+        <ProjectsPlaceholder v-else />
     </section>
 
     <UModal :dismissible="false" v-model:open="modalVisibility" @close:prevent="confirmExit"  class="text-zinc-700 dark:text-gray-200 dark:bg-zinc-800 bg-gray-200 max-w-[90%] w-300  h-150 max-h-[90vh]" >
@@ -520,7 +526,7 @@
                         
                     </div>
                     <div class="w-full max-md:hidden">
-                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 py-2 w-full rounded-lg mt-12 font-semibold text-gray-200 dark:text-zinc-700" @click="handleCreate">Criar</button>
+                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 py-2 w-full rounded-lg mt-12 font-semibold text-gray-200" @click="handleCreate">Criar</button>
                         <div v-else class="flex items-center gap-4">
                             <UPopover mode="click" arrow :content="{align:'center',side:'top'}" :ui="{arrow:'fill-gray-200 '}">
                                 <button class="text-center cursor-pointer dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-zinc-700 bg-zinc-700 hover:bg-zinc-800 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold">Apagar</button>
@@ -588,7 +594,7 @@
                         </div>
                     </div>
                      <div class="w-full md:hidden">
-                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 py-2 w-full rounded-lg mt-12 font-semibold max-md:hidden" @click="handleCreate">Criar</button>
+                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold max-md:hidden" @click="handleCreate">Criar</button>
                         <div v-else class="flex items-center gap-4">
                             <UPopover mode="click" arrow :content="{align:'center',side:'top'}" :ui="{arrow:'fill-gray-200 '}">
                                 <button class="text-center cursor-pointer dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-zinc-700 bg-zinc-700 hover:bg-zinc-800 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold">Apagar</button>

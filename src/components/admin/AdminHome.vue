@@ -4,6 +4,7 @@
     import { getContactData,editContactData } from '@/services/contactServices'
     import { getUserData,editUserData, getUserKeyData, editSecondaryPortrait, removeImage } from '@/services/userService'
     import { VueSpinner } from 'vue3-spinners'
+import AdminHomePlaceholder from '../placeholders/AdminHomePlaceholder.vue'
 
     const generateAlert:generateAlert = inject('generateAlert')!
     
@@ -15,16 +16,16 @@
     const image = ref<File | null>(null);
     const uploadLoading = ref<boolean>(false)
 
-        onMounted(async()=>{
-            try {
-                userData.value = await getUserData();
-                contactData.value = await getContactData();
-            } catch (error:unknown) {
-                if((error as ErrorResponse)){
-                console.log((error as ErrorResponse).response.data.error)
-            }
-            }
-        })
+    onMounted(async()=>{
+        try {
+            userData.value = await getUserData();
+            contactData.value = await getContactData();
+        } catch (error:unknown) {
+            if((error as ErrorResponse)){
+            console.log((error as ErrorResponse).response.data.error)
+        }
+        }
+    })
 
     async function updateSecondaryPhoto(e:Event){
         const target = e.target as HTMLInputElement
@@ -154,7 +155,7 @@
                 <small class="cursor-default ">*Se uma foto não for selecionada, será utilizada a mesma foto do perfil</small>
             </div>
 
-            <div class="w-6/12 max-md:w-full space-y-4" v-if="userData && contactData">
+            <div v-if="userData && contactData" class="w-6/12 max-md:w-full space-y-4" >
                 <div>
                     <label for="" class="font-semibold">Nome:</label>
                     <input @change="()=>{userEdited = true}" placeholder="Nome..." type="text" name="name" v-model="userData!.name"  class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-full h-10 border pl-2 rounded-lg">
@@ -172,6 +173,7 @@
                 </div>
                 <input @click="update($event)" type="submit" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold max-md:mx-auto max-md:block max-md:w-1/2">
             </div>
+            <AdminHomePlaceholder v-else/>
         </form>
     </section>
 </template>

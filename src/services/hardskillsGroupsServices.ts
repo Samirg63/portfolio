@@ -6,10 +6,7 @@ const url:string = import.meta.env.VITE_API_URL+'/hardskillsGroups'
 
 export async function getHardskillsGroupsData():Promise<IHardskillsGroupsData[]>{
     const data:IHttpResponse = await axios.get(url);
-    
-
-    
-        
+          
     if(data.data.status == 200){
         const arr:IHardskillsGroupsData[] = data.data.body as IHardskillsGroupsData[]
         return arr;

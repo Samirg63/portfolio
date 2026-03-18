@@ -3,6 +3,7 @@ import { getContactData } from '@/services/contactServices';
 import type { IContactData } from '@/utils/interfaces';
 import { onMounted, ref } from 'vue';
 import { formatLink } from '@/utils/helpers';
+import ContactPlaceholder from './placeholders/ContactPlaceholder.vue';
 
     const contactData = ref<IContactData | null>(null)
 
@@ -20,7 +21,7 @@ import { formatLink } from '@/utils/helpers';
 </script>
 
 <template>
-    <section class="p-12">
+    <section class="p-12" v-if="contactData">
         <div class="text-center">
             <h2 class="font-semibold text-3xl ">{{ contactData?.sectionTitle }}</h2>
             <p class="dark:text-gray-400 text-zinc-600">{{ contactData?.sectionSubtitle }}</p>
@@ -32,4 +33,5 @@ import { formatLink } from '@/utils/helpers';
             <button class="max-lg:w-[45%] w-45 block dark:bg-zinc-900 bg-gray-100 border-green-500 text-green-500 border px-2 py-1 rounded-sm " v-if="contactData?.whatsapp" ><v-icon name="bi-whatsapp"/> {{contactData?.whatsapp}}</button>
         </div>
     </section>
+    <contact-placeholder v-else/>
 </template>

@@ -6,6 +6,7 @@
     
     import type { ErrorResponse, IAboutData,generateAlert} from '@/utils/interfaces'
     import { editAboutData, editPortrait, getAboutData, getAboutKeyData, removeImage } from '@/services/aboutServices'
+import AdminAboutPlaceholder from '../placeholders/AdminAboutPlaceholder.vue'
     
 
     const generateAlert:generateAlert = inject('generateAlert')!
@@ -138,10 +139,11 @@
             </div>
             <small class="cursor-default">*Se uma foto não for selecionada, será utilizada a mesma foto do perfil</small>
         </div>
-        <div class="w-8/12 text-right max-md:w-full h-full">
+        <div v-if="aboutData" class="w-8/12 text-right max-md:w-full h-full">
             <QuillEditor id="admAboutText" @update:content="changeHandler($event)" contentType="html" :content="aboutData?.text" theme="snow" :toolbar="['bold','italic','underline']"  placeholder="Sobre mim..."/>
             <input type="submit" @click="update" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold mt-4 max-md:w-1/3">
         </div>
+        <AdminAboutPlaceholder v-else />
     </section>
 </template>
 

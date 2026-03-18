@@ -3,6 +3,7 @@ import { getAboutData } from '@/services/aboutServices';
 import { getUserKeyData } from '@/services/userService';
 import type { IAboutData } from '@/utils/interfaces';
 import { onMounted, ref } from 'vue';
+import AboutPlaceholder from './placeholders/AboutPlaceholder.vue';
 
     const aboutData = ref<IAboutData | null>(null)
     const userImage = ref<{image:string}|null>(null)
@@ -28,7 +29,8 @@ import { onMounted, ref } from 'vue';
             <img v-if="aboutData?.image" :src="JSON.parse(aboutData.image).url" alt="" class="rounded-full float-left p-8 w-80 h-80">
             <img v-else-if="userImage" :src="JSON.parse(userImage.image).url" alt="" class="rounded-full float-left p-8 w-80 h-80">
             <img v-else src="/defaults/defaultUser.webp" alt="" class="rounded-full float-left p-8 w-80 h-80">
-            <p v-html="aboutData?.text"></p>
+            <p v-if="aboutData" v-html="aboutData?.text"></p>
+            <AboutPlaceholder v-else/>
         </div>
     </section>
 </template>

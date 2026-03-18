@@ -4,6 +4,7 @@ import { getUserData } from '@/services/userService';
 import { formatLink } from '@/utils/helpers';
 import type { ErrorResponse, IContactData, IUserData } from '@/utils/interfaces';
 import { onMounted, ref } from 'vue';
+import HomePlaceholder from './placeholders/HomePlaceholder.vue';
 
 const userData = ref<IUserData | null>(null)
 const contactData = ref<IContactData | null>(null)
@@ -26,7 +27,7 @@ const contactData = ref<IContactData | null>(null)
         <img v-if="userData?.secondImage" :src="JSON.parse(userData.secondImage).url" alt="" class="rounded-full w-75 h-75 max-md:mx-auto ">
         <img v-else-if="userData?.image" :src="JSON.parse(userData.image).url" alt="" class="rounded-full w-75 h-75 max-md:mx-auto ">
         <img v-else src="/defaults/defaultUser.webp" alt="" class="rounded-full w-75 h-75">
-        <div class="space-y-4">
+        <div class="space-y-4" v-if="userData">
             
                 <h1 class="text-6xl">{{ userData?.name }}</h1>
                 
@@ -39,6 +40,7 @@ const contactData = ref<IContactData | null>(null)
                 </div>
             </div>
         </div>
+        <home-placeholder v-else/>
     </section>
 </template>
 

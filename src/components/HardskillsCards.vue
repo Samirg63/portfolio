@@ -4,16 +4,16 @@ import { ref,onMounted } from 'vue';
 import HardSkillCardSingle from './HardSkillCardSingle.vue';
 import type { ErrorResponse, IHardskillsGroupsData } from '@/utils/interfaces';
 import { getHardskillsGroupsData } from '@/services/hardskillsGroupsServices';
+import SkillsPlaceholder from './placeholders/SkillsPlaceholder.vue';
 
     const target = ref(null)
     const targetIsVisible = ref(false)
     let observer;
-    const hardskillsGroupsData = ref<IHardskillsGroupsData[] | null>(null)
+    const hardskillsGroupsData = ref<IHardskillsGroupsData[]>([])
 
 onMounted(async ()=>{
     observer = new IntersectionObserver(
-    (entries) => {
-      
+    (entries) => {   
       if(!targetIsVisible.value){
           targetIsVisible.value = entries[0]!.isIntersecting;
         }
@@ -45,12 +45,13 @@ onMounted(async ()=>{
 <template>
     <section class="p-12">
         <h2 class="font-semibold text-3xl">Minhas Especialidades:</h2>
-        <div class="grid grid-cols-4 max-md:grid-cols-2 max-sm:grid-cols-1 gap-5 mt-6" ref="target">
-            <TransitionGroup name="hardskillList" >
+        <div  class="grid grid-cols-4 max-md:grid-cols-2 max-sm:grid-cols-1 gap-5 mt-6" ref="target">
+            <TransitionGroup v-if="hardskillsGroupsData.length" name="hardskillList" >
                 <template v-for="(skillGroup,index) in hardskillsGroupsData" :key="index">
                     <HardSkillCardSingle v-if="targetIsVisible" :data="skillGroup" :id="'box'+index"/>
                 </template>
             </TransitionGroup>
+            <SkillsPlaceholder v-else/>
         </div>
     </section>
 </template>

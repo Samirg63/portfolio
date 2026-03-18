@@ -2,10 +2,9 @@
     import { onMounted} from 'vue';
     import router from '@/router';
     import AlertMessage from '@/components/AlertMessage.vue';
-    import Cookies from "js-cookie";
-    
+    import Cookies from "js-cookie";  
     import { getUserKeyData } from '@/services/userService';
-import { login } from '@/services/authServices';
+    import { login } from '@/services/authServices';
 
     let userData:{token:string};
     onMounted( async()=>{

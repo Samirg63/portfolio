@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue'
+    import { computed, inject, onMounted, ref } from 'vue'
     import type { ErrorResponse, generateAlert, IContactData } from '@/utils/interfaces'
     import { editContactData, getContactData } from '@/services/contactServices'
     import {vMaska} from 'maska/vue'
+    import AdminContactPlaceholder from '../placeholders/AdminContactPlaceholder.vue'
 
     const contactData = ref<IContactData>({} as IContactData)
-        const generateAlert:generateAlert = inject('generateAlert')!
+    const loadingData = ref<boolean>(false)
+    const generateAlert:generateAlert = inject('generateAlert')!
 
     onMounted(async()=>{
         try {
+            loadingData.value = true
             contactData.value = await getContactData();
+            loadingData.value = false
         } catch (error:unknown) {
             if((error as {response:{data:{error:string}}})){
             console.log((error as {response:{data:{error:string}}}).response.data.error)
@@ -52,7 +56,7 @@ import { computed, inject, onMounted, ref } from 'vue'
 </script>
 
 <template>
-    <form v-if="contactData" method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
+    <form v-if="!loadingData" method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
         <div>
             <label for="" class="font-semibold">*Título:</label>
             <input placeholder="Título..." type="text" name="CallPhrase" v-model="contactData!.sectionTitle" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-full h-10 border pl-2 rounded-lg">
@@ -82,4 +86,5 @@ import { computed, inject, onMounted, ref } from 'vue'
         </div>
         <input @click="handleEdit" type="submit" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold max-md:ml-auto max-md:block max-md:w-45">
     </form>
+    <AdminContactPlaceholder v-else />
 </template>

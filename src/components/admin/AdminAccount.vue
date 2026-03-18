@@ -2,20 +2,26 @@
     import { inject, onMounted, ref } from 'vue'
     import type { generateAlert, IUserData} from '@/utils/interfaces'
     import { getUserData } from '@/services/userService'
-import {  confirmPassword, editUser } from '@/services/authServices';
+    import {  confirmPassword, editUser } from '@/services/authServices';
+import AdminAccountPlaceholder from '../placeholders/AdminAccountPlaceholder.vue';
 
-    const generateAlert:generateAlert = inject('generateAlert')!
+
     const userData = ref<IUserData | null>(null)
+    const loadingData = ref<boolean>(false)
     const confirmModal = ref<boolean>(false);
     const changePasswordModal = ref<boolean>(false);
     const passwordVisibility = ref<boolean>(false);
     const password = ref<string>('')
     const passwordConfirm = ref<string>('')
+
+    const generateAlert:generateAlert = inject('generateAlert')!
     const logout:()=>void = inject('logout')!;
 
     onMounted(async()=>{
             try {
+                loadingData.value = true;
                 userData.value = await getUserData();
+                loadingData.value = false;
             } catch (error:unknown) {
                 if((error as {response:{data:{error:string}}})){
                 console.log((error as {response:{data:{error:string}}}).response.data.error)
@@ -78,7 +84,7 @@ import {  confirmPassword, editUser } from '@/services/authServices';
 </script>
 
 <template>
-    <form method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
+    <form v-if="!loadingData" method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
         <div>
             <small>*Ao redefinir o E-mail, você será automaticamente deslogado!</small><br>
             <label for="" class="font-semibold">E-mail:</label>
@@ -89,6 +95,7 @@ import {  confirmPassword, editUser } from '@/services/authServices';
             <input @click="handleChangeEmail($event)" type="submit" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40 max-md:w-1/2">
         </div>
     </form>
+    <AdminAccountPlaceholder v-else />
 
     <UModal v-model:open="confirmModal" class="p-4 text-zinc-700 dark:text-gray-200 dark:bg-zinc-800">
         <template #content>

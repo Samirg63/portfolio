@@ -4,10 +4,12 @@
     import { createTagsGroups, deleteTagsGroup, editTagGroup, getTagsGroupsData } from '@/services/tagsGroupsServices'
     import { createTags, deleteTags, editTag } from '@/services/tagsServices';
     import TagBox from '../TagBox.vue';
+import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     const generateAlert:generateAlert = inject('generateAlert')!
 
     const creationFormVisibility = ref<boolean>(false)
     const tagsGroupsData = ref<ITagsGroupsData[] | null>(null)
+    const loadingData = ref<boolean>(false)
     const creationTagFormVisibility = ref<boolean>(false);
 
     const newTag = ref<{name:string}>({name:''})
@@ -17,9 +19,9 @@
     onMounted(async()=>{
 
     try {
-       
-         tagsGroupsData.value = await getTagsGroupsData();
-        
+        loadingData.value = true
+        tagsGroupsData.value = await getTagsGroupsData();
+        loadingData.value = false;
     } catch (error:unknown) {
         console.log('error')
         if((error as {response:{data:{error:string}}})){
@@ -206,7 +208,7 @@
 <template>
     <section class="w-full">
         <div class="w-full border-b py-2">
-            <button @click="handleCreationForm" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg">
+            <button @click="handleCreationForm" :disabled="loadingData" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg">
                 <v-icon name="bi-plus-circle-fill" class="fill-zinc-800" scale="1.5"/>
                 <span class="font-semibold">Criar novo grupo de Tags</span>
             </button>     
@@ -228,97 +230,99 @@
         <section>
 
            
-            
-            <div class="tagWrapper" v-for="(group,groupIndex) in tagsGroupsData" :key="group.id">         
-                <div @click="openContainer($event)" class="tagHandler flex items-center justify-between cursor-pointer  py-4  rounded-md duration-200 select-none">
-                    <div class="flex items-center gap-2">
-                        <v-icon name="bi-chevron-down" class="downArrow duration-200" scale="1.4" />
-                        <div @click="(e)=>{e.stopPropagation()}" v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == undefined" class="flex items-center gap-2">
-                            <input  type="text" v-model="tagsGroupsData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
-                            <input  v-model="tagsGroupsData![groupIndex]!.color" type="color" name="color" id="" class="h-12 w-24 cursor-pointer">
+            <template v-if="!loadingData">    
+                <div class="tagWrapper" v-for="(group,groupIndex) in tagsGroupsData" :key="group.id">         
+                    <div @click="openContainer($event)" class="tagHandler flex items-center justify-between cursor-pointer  py-4  rounded-md duration-200 select-none">
+                        <div class="flex items-center gap-2">
+                            <v-icon name="bi-chevron-down" class="downArrow duration-200" scale="1.4" />
+                            <div @click="(e)=>{e.stopPropagation()}" v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == undefined" class="flex items-center gap-2">
+                                <input  type="text" v-model="tagsGroupsData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
+                                <input  v-model="tagsGroupsData![groupIndex]!.color" type="color" name="color" id="" class="h-12 w-24 cursor-pointer">
+                            </div>
+                            <TagBox v-else :name="group.name" :bgcolor="group.color" :scale="1.3" class="ml-4"/>
                         </div>
-                        <TagBox v-else :name="group.name" :bgcolor="group.color" :scale="1.3" class="ml-4"/>
-                    </div>
-                    <div v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == undefined" class="flex items-center gap-2 actionBtn pr-2">
-                        <button @click="(e)=>{editingTag=null,e.stopPropagation()}" class="py-px px-0.5 rounded-md duration-200 cursor-pointer bg-red-600  hover:bg-red-800"><v-icon name="io-close-sharp" class="fill-gray-200" scale="1.5"/></button>
-                        <button @click="(e)=>{handleEditTagGroup(groupIndex),e.stopPropagation()}" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
-                    </div>
-                    <div v-else class="flex items-center gap-2 actionBtn">
-                        <UPopover mode="click" arrow :content="{align:'center',side:'left'}" :ui="{arrow:'fill-gray-200 '}">
-                            <button @click="(e)=>{e.stopPropagation()}" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer">
-                                <v-icon name="bi-trash-fill" class="fill-red-600" scale="1.3"/>
-                            </button>
-                        
-                            <template #content="{close}">
-                                <div class="p-4 border dark:border-gray-200 dark:bg-zinc-800 bg-gray-200 rounded-md ">
-                                    <h6 class="font-semibold text-md text-center mb-2 leading-5">Tem certeza que deseja apagar?
-                                        <br> Todas as Tags no grupo tambem serão apagadas!
-                                    </h6>
-                                    <div class="flex items-center gap-4 justify-center">
-                                        <button @click="(()=>{close()})" class="font-semibold dark:bg-gray-200 bg-zinc-700 dark:hover:bg-gray-300 hover:bg-zinc-800 dark:text-zinc-700 text-gray-200 duration-200  rounded-sm cursor-pointer  py-1 px-2 w-1/2">Cancelar</button>
-                                        <button @click="handleDeletetagGroup(groupIndex)" class="font-semibold text-gray-200 bg-red-600 duration-200 hover:bg-red-800 rounded-sm cursor-pointer py-1 px-2 w-1/2">Apagar</button>
-                                    </div>
-                                </div>
-                            </template>
-                        </UPopover>
-                        <button @click="(e)=>{e.stopPropagation();SetEditTagCoordinates(groupIndex)}" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale="1.3"/></button>
-                    </div>
-                </div>
-
-                <div class="containerItems hidden">    
-                    <!-- Create Tag container -->
-                        <div class="pb-2">
-                            <button @click="handleTagCreationForm()" :hidden="creationTagFormVisibility" class="border-b border-gray-400 text-zinc-400 ml-8 pb-px cursor-pointer duration-200 dark:hover:text-zinc-100 hover:text-zinc-700 dark:hover:border-zinc-100 hover:border-zinc-700">Criar nova Tag</button>
-                            <form  :hidden="!creationTagFormVisibility" method="post" id="creationForm" class="items-end justify-between duration-200 flex pl-6" >
-                                <div class="flex items-center gap-4 w-8/12">
-                                    
-                                    <div class="flex flex-col w-1/2">
-                                        <label for="" class="font-semibold">Nome:</label>
-                                        <input v-model="newTag.name" placeholder="Nome..." type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button  @click="createTag($event,group.id)" class="bg-green-700 hover:bg-green-600 duration-200 text-gray-200 py-0.5  rounded-lg cursor-pointer font-semibold w-12">
-                                        <v-icon name="bi-check-lg" scale="1.4"/>
-                                    </button>
-                                    <button  @click="(e)=>{e.preventDefault();handleTagCreationForm()}" class="bg-red-700 hover:bg-red-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-12">
-                                        <v-icon name="io-close" scale="1.4"/>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>                                    
-                        <div class="containerItemSingle flex items-center justify-between pl-6 py-1" v-for="(tag,tagIndex) in group.tags" :key="tag.id">
-                            <div class="flex items-center gap-2">
-                                <input v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" type="text" v-model="tagsGroupsData![groupIndex]!.tags![tagIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">           
-                                <h6 v-else class="text-lg">{{ tag.name }}</h6>
-                            </div>
-                            <div v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" class="flex items-center gap-2 actionBtn pr-2">
-                                <button @click="(e)=>{editingTag=null,e.stopPropagation()}" class="py-px px-0.5 rounded-md duration-200 cursor-pointer bg-red-600  hover:bg-red-800"><v-icon name="io-close-sharp" class="fill-gray-200" scale="1.5"/></button>
-                                <button @click="(e)=>{handleEditTag(groupIndex,tagIndex),e.stopPropagation()}" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
-                            </div>
-                            <div v-else class="flex items-center gap-2 actionBtn">
-                                <UPopover mode="click" arrow :content="{align:'center',side:'left'}" :ui="{arrow:'fill-gray-200 '}">
-                                    <button class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer">
-                                        <v-icon name="bi-trash-fill" class="fill-red-600" scale=".9"/>
-                                    </button>
-                                
-                                    <template #content="{close}">
-                                        <div class="p-4 border dark:border-gray-200 dark:bg-zinc-800 bg-gray-200 rounded-md ">
-                                            <h6 class="font-semibold text-md">Tem certeza que deseja apagar?</h6>
-                                            <div class="flex items-center gap-4 justify-center">
-                                                <button @click="(()=>{close()})" class="font-semibold dark:bg-gray-200 bg-zinc-700 dark:hover:bg-gray-300 hover:bg-zinc-800 dark:text-zinc-700 text-gray-200 duration-200  rounded-sm cursor-pointer  py-1 px-2 w-1/2">Cancelar</button>
-                                                <button @click="handleDeleteTag(groupIndex,tagIndex)" class="font-semibold text-gray-200 bg-red-600 duration-200 hover:bg-red-800 rounded-sm cursor-pointer py-1 px-2 w-1/2">Apagar</button>
-                                            </div>
+                        <div v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == undefined" class="flex items-center gap-2 actionBtn pr-2">
+                            <button @click="(e)=>{editingTag=null,e.stopPropagation()}" class="py-px px-0.5 rounded-md duration-200 cursor-pointer bg-red-600  hover:bg-red-800"><v-icon name="io-close-sharp" class="fill-gray-200" scale="1.5"/></button>
+                            <button @click="(e)=>{handleEditTagGroup(groupIndex),e.stopPropagation()}" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
+                        </div>
+                        <div v-else class="flex items-center gap-2 actionBtn">
+                            <UPopover mode="click" arrow :content="{align:'center',side:'left'}" :ui="{arrow:'fill-gray-200 '}">
+                                <button @click="(e)=>{e.stopPropagation()}" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer">
+                                    <v-icon name="bi-trash-fill" class="fill-red-600" scale="1.3"/>
+                                </button>
+                            
+                                <template #content="{close}">
+                                    <div class="p-4 border dark:border-gray-200 dark:bg-zinc-800 bg-gray-200 rounded-md ">
+                                        <h6 class="font-semibold text-md text-center mb-2 leading-5">Tem certeza que deseja apagar?
+                                            <br> Todas as Tags no grupo tambem serão apagadas!
+                                        </h6>
+                                        <div class="flex items-center gap-4 justify-center">
+                                            <button @click="(()=>{close()})" class="font-semibold dark:bg-gray-200 bg-zinc-700 dark:hover:bg-gray-300 hover:bg-zinc-800 dark:text-zinc-700 text-gray-200 duration-200  rounded-sm cursor-pointer  py-1 px-2 w-1/2">Cancelar</button>
+                                            <button @click="handleDeletetagGroup(groupIndex)" class="font-semibold text-gray-200 bg-red-600 duration-200 hover:bg-red-800 rounded-sm cursor-pointer py-1 px-2 w-1/2">Apagar</button>
                                         </div>
-                                    </template>
-                                </UPopover>
-                                <button @click="SetEditTagCoordinates(groupIndex,tagIndex)" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale=".9"/></button>
-                            </div>
-                        </div>                   
-                        
+                                    </div>
+                                </template>
+                            </UPopover>
+                            <button @click="(e)=>{e.stopPropagation();SetEditTagCoordinates(groupIndex)}" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale="1.3"/></button>
+                        </div>
+                    </div>
+
+                    <div class="containerItems hidden">    
+                        <!-- Create Tag container -->
+                            <div class="pb-2">
+                                <button @click="handleTagCreationForm()" :hidden="creationTagFormVisibility" class="border-b border-gray-400 text-zinc-400 ml-8 pb-px cursor-pointer duration-200 dark:hover:text-zinc-100 hover:text-zinc-700 dark:hover:border-zinc-100 hover:border-zinc-700">Criar nova Tag</button>
+                                <form  :hidden="!creationTagFormVisibility" method="post" id="creationForm" class="items-end justify-between duration-200 flex pl-6" >
+                                    <div class="flex items-center gap-4 w-8/12">
+                                        
+                                        <div class="flex flex-col w-1/2">
+                                            <label for="" class="font-semibold">Nome:</label>
+                                            <input v-model="newTag.name" placeholder="Nome..." type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button  @click="createTag($event,group.id)" class="bg-green-700 hover:bg-green-600 duration-200 text-gray-200 py-0.5  rounded-lg cursor-pointer font-semibold w-12">
+                                            <v-icon name="bi-check-lg" scale="1.4"/>
+                                        </button>
+                                        <button  @click="(e)=>{e.preventDefault();handleTagCreationForm()}" class="bg-red-700 hover:bg-red-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-12">
+                                            <v-icon name="io-close" scale="1.4"/>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>                                    
+                            <div class="containerItemSingle flex items-center justify-between pl-6 py-1" v-for="(tag,tagIndex) in group.tags" :key="tag.id">
+                                <div class="flex items-center gap-2">
+                                    <input v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" type="text" v-model="tagsGroupsData![groupIndex]!.tags![tagIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">           
+                                    <h6 v-else class="text-lg">{{ tag.name }}</h6>
+                                </div>
+                                <div v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" class="flex items-center gap-2 actionBtn pr-2">
+                                    <button @click="(e)=>{editingTag=null,e.stopPropagation()}" class="py-px px-0.5 rounded-md duration-200 cursor-pointer bg-red-600  hover:bg-red-800"><v-icon name="io-close-sharp" class="fill-gray-200" scale="1.5"/></button>
+                                    <button @click="(e)=>{handleEditTag(groupIndex,tagIndex),e.stopPropagation()}" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
+                                </div>
+                                <div v-else class="flex items-center gap-2 actionBtn">
+                                    <UPopover mode="click" arrow :content="{align:'center',side:'left'}" :ui="{arrow:'fill-gray-200 '}">
+                                        <button class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer">
+                                            <v-icon name="bi-trash-fill" class="fill-red-600" scale=".9"/>
+                                        </button>
+                                    
+                                        <template #content="{close}">
+                                            <div class="p-4 border dark:border-gray-200 dark:bg-zinc-800 bg-gray-200 rounded-md ">
+                                                <h6 class="font-semibold text-md">Tem certeza que deseja apagar?</h6>
+                                                <div class="flex items-center gap-4 justify-center">
+                                                    <button @click="(()=>{close()})" class="font-semibold dark:bg-gray-200 bg-zinc-700 dark:hover:bg-gray-300 hover:bg-zinc-800 dark:text-zinc-700 text-gray-200 duration-200  rounded-sm cursor-pointer  py-1 px-2 w-1/2">Cancelar</button>
+                                                    <button @click="handleDeleteTag(groupIndex,tagIndex)" class="font-semibold text-gray-200 bg-red-600 duration-200 hover:bg-red-800 rounded-sm cursor-pointer py-1 px-2 w-1/2">Apagar</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </UPopover>
+                                    <button @click="SetEditTagCoordinates(groupIndex,tagIndex)" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale=".9"/></button>
+                                </div>
+                            </div>                   
+                            
+                    </div>
+                    <div class="divider border-b border-zinc-600"></div>
                 </div>
-                <div class="divider border-b border-zinc-600"></div>
-            </div>
+            </template>
+            <ListPlaceholder v-else/>
         </section>
     </section>
 </template>
