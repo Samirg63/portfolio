@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { getContactData } from '@/services/contactServices';
-import { getUserData } from '@/services/userService';
-import { formatLink } from '@/utils/helpers';
-import type { ErrorResponse, IContactData, IUserData } from '@/utils/interfaces';
-import { onMounted, ref } from 'vue';
-import HomePlaceholder from './placeholders/HomePlaceholder.vue';
 
-const userData = ref<IUserData | null>(null)
-const contactData = ref<IContactData | null>(null)
+import { formatLink } from '@/utils/helpers';
+import type { ErrorResponse} from '@/utils/interfaces';
+import { onMounted } from 'vue';
+import HomePlaceholder from './placeholders/HomePlaceholder.vue';
+import { useUserData } from '@/composables/UserComposable';
+import { useContactData } from '@/composables/ContactComposable';
+
+
+const {loadUser,loading:userLoading, userData} = useUserData()
+const {loadContact,loading:contactLoading, contactData} = useContactData()
+
 
 
     onMounted(async()=>{
             try {
-                userData.value = await getUserData();
-                contactData.value = await getContactData();
+  
+                await Promise.all([loadUser(),loadContact()])
             } catch (error:unknown) {
                 if((error as ErrorResponse)){
                 console.log((error as ErrorResponse).response.data.error)
@@ -27,7 +30,7 @@ const contactData = ref<IContactData | null>(null)
         <img v-if="userData?.secondImage" :src="JSON.parse(userData.secondImage).url" alt="" class="rounded-full w-75 h-75 max-md:mx-auto ">
         <img v-else-if="userData?.image" :src="JSON.parse(userData.image).url" alt="" class="rounded-full w-75 h-75 max-md:mx-auto ">
         <img v-else src="/defaults/defaultUser.webp" alt="" class="rounded-full w-75 h-75">
-        <div class="space-y-4" v-if="userData">
+        <div class="space-y-4" v-if="!contactLoading && !userLoading">
             
                 <h1 class="text-6xl">{{ userData?.name }}</h1>
                 

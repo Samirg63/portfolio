@@ -1,16 +1,15 @@
 <script setup lang="ts">
     import { ref,onMounted, inject } from 'vue';
     import type { ErrorResponse, generateAlert, IHardskillsCoordinates, IHardskillsData, IHardskillsGroupsData} from '@/utils/interfaces'
-    import { getHardskillsGroupsData,createHardskillsGroups, editHardskillGroup, deleteHardskillGroup } from '@/services/hardskillsGroupsServices'
-    import { createHardskills, changeOrder, editHardskill, deleteHardskill } from '@/services/hardskillsServices';
+    import { createHardskillsGroups,  deleteHardskillGroup } from '@/services/hardskillsGroupsServices'
+    import { createHardskills, changeOrder, deleteHardskill } from '@/services/hardskillsServices';
     import { VueDraggableNext as draggable } from 'vue-draggable-next'
-import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
+    import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
+import { useSkillsData } from '@/composables/SkillsComposable';
 
     const generateAlert:generateAlert = inject('generateAlert')!
 
-    const hardskillsGroupsData = ref<IHardskillsGroupsData[] | null>(null)
-    const loadingData = ref<boolean>(false)
-    
+    const {loading,hardskillsGroupData,loadSkills,saveSkill, saveSkillGroup, clearCache} = useSkillsData();  
     const creationFormVisibility = ref<boolean>(false)
     const creationHardskillFormVisibility = ref<boolean>(false)
     const maxHardskillsGroups = ref<boolean>(false)
@@ -27,12 +26,11 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     onMounted(async()=>{
         
         try {
-            loadingData.value = true
-            hardskillsGroupsData.value = await getHardskillsGroupsData();
-            if(hardskillsGroupsData.value.length >= 4){
+            
+            await loadSkills();
+            if(hardskillsGroupData.value.length >= 4){
                 maxHardskillsGroups.value = true
             }  
-            loadingData.value = false;
         } catch (error:unknown) {   
             if((error as ErrorResponse)){
             console.log((error as ErrorResponse).response.data.error)
@@ -102,11 +100,10 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
         const formated = formatIconValue(editingIcon.value)
 
         try {
-            const edit = await editHardskill({id:id,icon:formated} as IHardskillsData)
-            if(edit.status == 200){
-                hardskillsGroupsData.value![groupIndex]!.hardskills![hardskillIndex]!.icon = formated;
-                generateAlert(true,'Ícone editado com sucesso')
-            }
+            await saveSkill({id:id,icon:formated} as IHardskillsData)
+            hardskillsGroupData.value![groupIndex]!.hardskills![hardskillIndex]!.icon = formated;
+            generateAlert(true,'Ícone editado com sucesso')
+            
             
         } catch (error:unknown) {
             if((error as ErrorResponse)){
@@ -130,12 +127,12 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     }
 
     async function handleEditHardskill(groupIndex:number,skillIndex:number){
-        const skill:IHardskillsData = hardskillsGroupsData.value![groupIndex]!.hardskills![skillIndex]!;
+        const skill:IHardskillsData = hardskillsGroupData.value![groupIndex]!.hardskills![skillIndex]!;
         try {
-            const edit = await editHardskill(skill);
-            if(edit.status == 200){
-                generateAlert(true,'Nome editado com sucesso')
-            }
+            await saveSkill(skill);
+
+            generateAlert(true,'Nome editado com sucesso')
+            
         } catch (error) {
             if((error as ErrorResponse)){
                 console.log((error as ErrorResponse).response.data.error)
@@ -146,12 +143,11 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     }
 
     async function handleEditHardskillGroup(groupIndex:number){
-        const skill:IHardskillsGroupsData = hardskillsGroupsData.value![groupIndex]!;
+        const skill:IHardskillsGroupsData = hardskillsGroupData.value![groupIndex]!;
         try {
-            const edit = await editHardskillGroup(skill);
-            if(edit.status == 200){
-                generateAlert(true,'Nome editado com sucesso')
-            }
+            await saveSkillGroup(skill);
+            generateAlert(true,'Nome editado com sucesso')
+            
         } catch (error) {
             if((error as ErrorResponse)){
                 console.log((error as ErrorResponse).response.data.error)
@@ -169,11 +165,12 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
             const create = await createHardskillsGroups(newHardskillGroup.value);
             if(create.status == 200){
                 (create.body as IHardskillsGroupsData).hardskills = [];
-                hardskillsGroupsData.value?.push(create.body as IHardskillsGroupsData)
+                clearCache();
+                hardskillsGroupData.value?.push(create.body as IHardskillsGroupsData)
     
                 generateAlert(true,'Grupo criado com sucesso!')
                 creationFormVisibility.value = false;
-                if(hardskillsGroupsData.value!.length >= 4){
+                if(hardskillsGroupData.value!.length >= 4){
                     maxHardskillsGroups.value = true
                 }
 
@@ -191,9 +188,10 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
         e.preventDefault();
         try {
             newHardskill.value.icon = formatIconValue(newHardskill.value.icon)
+            clearCache()
             const create = await createHardskills(newHardskill.value,groupId);
             if(create.status == 200){
-                hardskillsGroupsData.value?.map((data)=>{
+                hardskillsGroupData.value?.map((data)=>{
                     if(data.id === groupId){
                         data.hardskills!.push(create.body as IHardskillsData);
                     }
@@ -226,17 +224,19 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
             }
         }
 
+        clearCache();
         disableDraggable.value = false
     }
 
     async function handleDeletehardskill(groupIndex:number,skillIndex:number){
-        const skill:IHardskillsData = hardskillsGroupsData.value![groupIndex]!.hardskills![skillIndex]!;
+        const skill:IHardskillsData = hardskillsGroupData.value![groupIndex]!.hardskills![skillIndex]!;
 
         try {
             const deleteSkill = await deleteHardskill(skill.id);
+            clearCache()
             if(deleteSkill.status == 200){
                 generateAlert(true,'Especialidade apagada com sucesso')
-                hardskillsGroupsData.value![groupIndex]!.hardskills! = hardskillsGroupsData.value![groupIndex]!.hardskills!.filter((data)=>data.id !== skill.id)
+                hardskillsGroupData.value![groupIndex]!.hardskills! = hardskillsGroupData.value![groupIndex]!.hardskills!.filter((data)=>data.id !== skill.id)
             }
         } catch (error) {
             if((error as ErrorResponse)){
@@ -246,14 +246,15 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     }
 
     async function handleDeletehardskillGroup(groupIndex:number){
-        const group:IHardskillsGroupsData = hardskillsGroupsData.value![groupIndex]!;
+        const group:IHardskillsGroupsData = hardskillsGroupData.value![groupIndex]!;
 
         try {
+            clearCache();
             const deleteGroup = await deleteHardskillGroup(group.id);
             if(deleteGroup.group.status == 200){
                 generateAlert(true,'Grupo apagado com sucesso');
 
-                hardskillsGroupsData.value = hardskillsGroupsData.value!.filter((data)=> data.id !== group.id);
+                hardskillsGroupData.value = hardskillsGroupData.value!.filter((data)=> data.id !== group.id);
                 if(maxHardskillsGroups.value)
                     maxHardskillsGroups.value = false;
             }
@@ -270,7 +271,7 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
 <template>
     <section class="w-full">
         <div class="w-full border-b py-2">
-            <button @click="handleCreationForm" :disabled="maxHardskillsGroups || loadingData" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg disabled:opacity-40 disabled:cursor-default">
+            <button @click="handleCreationForm" :disabled="maxHardskillsGroups || loading" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg disabled:opacity-40 disabled:cursor-default">
                 <v-icon name="bi-plus-circle-fill" class="fill-zinc-800" scale="1.5"/>
                 <span class="font-semibold">Criar novo grupo de especialidades</span>
             </button>     
@@ -286,12 +287,12 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
             <input type="submit" @click="createGroup($event)" value="Criar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40">
         </form>
         <section>  
-            <template v-if="!loadingData">          
-                <div  class="hardskillWrapper" v-for="(group,groupIndex) in hardskillsGroupsData" :key="group.id">         
+            <template v-if="!loading">          
+                <div  class="hardskillWrapper" v-for="(group,groupIndex) in hardskillsGroupData" :key="group.id">         
                     <div @click="openContainer($event)" class="hardskillHandler flex items-center justify-between cursor-pointer  py-4  rounded-md duration-200 select-none">
                         <div class="flex items-center gap-2">
                             <v-icon name="bi-chevron-down" class="downArrow duration-200" scale="1.4"/>
-                            <input @click="(e)=>{e.stopPropagation()}" v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == undefined" type="text" v-model="hardskillsGroupsData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
+                            <input @click="(e)=>{e.stopPropagation()}" v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == undefined" type="text" v-model="hardskillsGroupData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
                             <h5 v-else class="text-2xl">{{ group.name }}</h5>
                         </div>
                         <div v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == undefined" class="flex items-center gap-2 actionBtn pr-2">
@@ -379,7 +380,7 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
                                             </template>
                                         </UPopover>
                                         
-                                        <input v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == hardskillIndex" type="text" v-model="hardskillsGroupsData![groupIndex]!.hardskills![hardskillIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
+                                        <input v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == hardskillIndex" type="text" v-model="hardskillsGroupData![groupIndex]!.hardskills![hardskillIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
                                         <h6 v-else class="text-lg">{{ hardskill.name }}</h6>
                                     </div>
                                     <div v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == hardskillIndex" class="flex items-center gap-2 actionBtn">

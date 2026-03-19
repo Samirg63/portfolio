@@ -5,12 +5,15 @@
     import { VueSpinner } from 'vue3-spinners'
     
     import type { ErrorResponse, IAboutData,generateAlert} from '@/utils/interfaces'
-    import { editAboutData, editPortrait, getAboutData, getAboutKeyData, removeImage } from '@/services/aboutServices'
+    import { editPortrait, getAboutKeyData, removeImage } from '@/services/aboutServices'
 import AdminAboutPlaceholder from '../placeholders/AdminAboutPlaceholder.vue'
+import { useAboutData } from '@/composables/AboutComposable'
     
 
     const generateAlert:generateAlert = inject('generateAlert')!
-    const aboutData = ref<IAboutData | null>(null)
+
+    const {aboutData,loadAbout,saveAbout,loading} = useAboutData();
+    
     const aboutEdited = ref<boolean>(false)
     const image = ref<File | null>(null)
     const uploadLoading = ref<boolean>(false) 
@@ -18,7 +21,7 @@ import AdminAboutPlaceholder from '../placeholders/AdminAboutPlaceholder.vue'
     onMounted(async()=>{
 
         try {
-            aboutData.value = await getAboutData();
+            await loadAbout();
             
         } catch (error:unknown) {
             if((error as {response:{data:{error:string}}})){
@@ -35,10 +38,8 @@ import AdminAboutPlaceholder from '../placeholders/AdminAboutPlaceholder.vue'
     async function update(){
         if(aboutEdited.value){
             try {
-                const response = await editAboutData(aboutData.value as IAboutData);
-                if(response.status == 200){
-                    generateAlert(true, "Conteúdo editado com sucesso!")
-                }
+                await saveAbout(aboutData.value as IAboutData);               
+                generateAlert(true, "Conteúdo editado com sucesso!")               
             } catch (error:unknown) {
                 if((error as {response:{data:{error:string}}})){
                     generateAlert(false,'Algo deu errado')
@@ -139,7 +140,7 @@ import AdminAboutPlaceholder from '../placeholders/AdminAboutPlaceholder.vue'
             </div>
             <small class="cursor-default">*Se uma foto não for selecionada, será utilizada a mesma foto do perfil</small>
         </div>
-        <div v-if="aboutData" class="w-8/12 text-right max-md:w-full h-full">
+        <div v-if="!loading" class="w-8/12 text-right max-md:w-full h-full">
             <QuillEditor id="admAboutText" @update:content="changeHandler($event)" contentType="html" :content="aboutData?.text" theme="snow" :toolbar="['bold','italic','underline']"  placeholder="Sobre mim..."/>
             <input type="submit" @click="update" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold mt-4 max-md:w-1/3">
         </div>

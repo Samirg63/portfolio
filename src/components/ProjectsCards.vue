@@ -1,25 +1,27 @@
 <script setup lang="ts">
-    import { onMounted,ref } from 'vue';
+    import { onMounted,ref, watch } from 'vue';
 
     //Components
     import AdminProjectSingle from './admin/AdminProjectSingle.vue';
     import TagBox from './TagBox.vue';
     import type { ErrorResponse, IModalData, IProjectsData, ITagsData, ITagsGroupsData } from '@/utils/interfaces';
     import { getProjectsBytag, getProjectsData } from '@/services/projectsServices';
-    import { getTagsGroupsData } from '@/services/tagsGroupsServices';
     import { formatLink } from '@/utils/helpers';
     import { searchTags } from '@/services/tagsServices';
     import ProjectsPlaceholder from './placeholders/ProjectsPlaceholder.vue';
+import { useProjectsData } from '@/composables/ProjectComposable';
+import { useTagsData } from '@/composables/TagsComposable';
 
     const toggleOverflow = ref<boolean>(false)
+    const {loadProjects,loading:projectsLoading,projectsData} = useProjectsData();
+    const {loadTags,tagsData:allTags} = useTagsData()
 
     
     const modalVisibility = ref<boolean>(false)
     const imageModalVisibility = ref<boolean>(false)
-    const projectsData = ref<IProjectsData[]>([] as IProjectsData[])
     const modalData = ref<IModalData>({} as IModalData)
     const selectedProject = ref<number|null>()
-    const allTags = ref<ITagsGroupsData[]>([] as ITagsGroupsData[])
+    
     const searchQuery = ref<string>('')
 
 
@@ -27,14 +29,10 @@
     const showingTags = ref<ITagsData[]>([] as ITagsData[])
 
     onMounted(async ()=>{
-        const gridEl = (document.getElementsByClassName('grid'))[0]
-        if((gridEl as HTMLElement).offsetHeight >= 780){
-            toggleOverflow.value = true
-        }
 
         try {
-            projectsData.value = await getProjectsData();
-            allTags.value = await getTagsGroupsData();
+            await loadProjects();
+            await loadTags();
         } catch (error:unknown) {
             if((error as ErrorResponse)){
             console.log((error as ErrorResponse).response.data.error)
@@ -42,8 +40,17 @@
         }
     })
 
+    watch(projectsLoading,()=>{
+        if(projectsLoading.value === false){
+            const gridEl = (document.getElementsByClassName('grid'))[0]
+            if((gridEl as HTMLElement).offsetHeight >= 780){
+                toggleOverflow.value = true
+            }
+        }
+    })
+
     function addTag(tag:ITagsData){
-        const group = allTags.value.filter((info)=> info.id === tag.tagGroupId)
+        const group = allTags.value!.filter((info)=> info.id === tag.tagGroupId)
         group[0]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = true}} )    
         handleShowingGroup()
 
@@ -51,7 +58,7 @@
     }
 
     function removeTag(tag:ITagsData,groupIndex:number){
-        allTags.value[groupIndex]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = false}} )
+        allTags.value![groupIndex]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = false}} )
         handleShowingGroup()
         handleSearchByTags();    
     }
@@ -60,7 +67,7 @@
         modalVisibility.value = true;
         selectedProject.value = id;
 
-        projectsData.value.map((project:IProjectsData)=>{
+        projectsData.value!.map((project:IProjectsData)=>{
                 if(project.id === id){
                     
                 //Adjust images array
@@ -87,7 +94,7 @@
     
     async function handleSearchByTags(){
         const selectedTags:number[] = []
-        allTags.value.map((group:ITagsGroupsData)=>{
+        allTags.value!.map((group:ITagsGroupsData)=>{
             group.tags!.map((tag:ITagsData)=>{
                 if(tag.selected){
                     selectedTags.push(tag.id)
@@ -214,7 +221,7 @@
         const tagsArr:ITagsData[] = []
 
         if(showingTagGroupId.value){
-            allTags.value.map((group:ITagsGroupsData) => {  
+            allTags.value!.map((group:ITagsGroupsData) => {  
                 if(group.id === showingTagGroupId.value){
                     const data = group.tags!.map((innerTag)=>{return {...innerTag,color:group.color}})
                     data?.map((info:ITagsData)=>{
@@ -223,7 +230,7 @@
                 }       
             })
         }else{
-            allTags.value.map((group:ITagsGroupsData) => {     
+            allTags.value!.map((group:ITagsGroupsData) => {     
                 const data = group.tags!.map((innerTag)=>{return {...innerTag,color:group.color}})
                 data?.map((info:ITagsData)=>{
                     tagsArr.push(info)
@@ -267,7 +274,7 @@
                 <div class="dark:bg-zinc-800 bg-gray-100 border dark:border-zinc-600 border-gray-400 rounded-md flex max-md:max-w-120">
                     <aside class="border-r dark:border-zinc-600 border-gray-400">
                         <ul>
-                            <li @click="selectGroup()" class=" px-4 py-2 cursor-pointer duration-200 dark:hover:bg-zinc-700 hover:bg-gray-300">Todos ({{ allTags.reduce((total,actual) => total + (actual.tags!.length),0) }})</li>
+                            <li @click="selectGroup()" class=" px-4 py-2 cursor-pointer duration-200 dark:hover:bg-zinc-700 hover:bg-gray-300">Todos ({{ allTags!.reduce((total,actual) => total + (actual.tags!.length),0) }})</li>
                             <li v-for="(group) in allTags" @click="selectGroup(group.id)" :key="group.id" class="border-t dark:border-zinc-600 border-gray-400 px-4 py-2 cursor-pointer duration-200 dark:hover:bg-zinc-700 hover:bg-gray-300">{{ group.name }} ({{ group.tags!.length }})</li>
                         </ul>
                     </aside>
@@ -293,7 +300,7 @@
                 </div>
             </template>
         </UPopover>
-        <div v-if="projectsData.length" 
+        <div v-if="!projectsLoading" 
         :class="(toggleOverflow) && 'overflowOn'"
         class="grid grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1 gap-8  max-h-200 overflow-y-auto overflow-x-visible p-4">
             <AdminProjectSingle v-for="project in projectsData" :key="project.id" :id="project.id!" :desc="project.desc" :coverIndex="project.coverImage" :images="project.images" :name="project.name"  @click="toggleModal(project.id!)"/>

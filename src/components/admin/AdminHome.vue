@@ -1,16 +1,19 @@
 <script setup lang="ts">
     import { inject, onMounted, ref } from 'vue'
     import type { IUserData,IContactData, generateAlert, ErrorResponse } from '@/utils/interfaces'
-    import { getContactData,editContactData } from '@/services/contactServices'
-    import { getUserData,editUserData, getUserKeyData, editSecondaryPortrait, removeImage } from '@/services/userService'
+    import {  getUserKeyData, editSecondaryPortrait, removeImage } from '@/services/userService'
     import { VueSpinner } from 'vue3-spinners'
 import AdminHomePlaceholder from '../placeholders/AdminHomePlaceholder.vue'
+import { useUserData } from '@/composables/UserComposable'
+import { useContactData } from '@/composables/ContactComposable'
 
     const generateAlert:generateAlert = inject('generateAlert')!
     
+    const {loadUser,saveUser,userData} = useUserData()
+    const {loadContact,saveContact,contactData} = useContactData()
 
-    const userData = ref<IUserData | null>(null)
-    const contactData = ref<IContactData | null>(null)
+   
+    
     const userEdited = ref<boolean>(false);
     const contactEdited = ref<boolean>(false);
     const image = ref<File | null>(null);
@@ -18,8 +21,7 @@ import AdminHomePlaceholder from '../placeholders/AdminHomePlaceholder.vue'
 
     onMounted(async()=>{
         try {
-            userData.value = await getUserData();
-            contactData.value = await getContactData();
+            await Promise.all([loadUser(),loadContact()])
         } catch (error:unknown) {
             if((error as ErrorResponse)){
             console.log((error as ErrorResponse).response.data.error)
@@ -67,8 +69,7 @@ import AdminHomePlaceholder from '../placeholders/AdminHomePlaceholder.vue'
 
         if(userEdited.value){
             try {
-                await editUserData(userData.value as IUserData);
-                
+                await saveUser(userData.value as IUserData);                
             } catch (error:unknown) {
                 ok = false
                 if((error as {response:{data:{error:string}}})){
@@ -80,8 +81,7 @@ import AdminHomePlaceholder from '../placeholders/AdminHomePlaceholder.vue'
 
         if(contactEdited.value){
             try {
-                await editContactData(contactData.value as IContactData);
-                
+                await saveContact(contactData.value as IContactData);            
             } catch (error:unknown) {
                 ok = false;
                 if((error as {response:{data:{error:string}}}))

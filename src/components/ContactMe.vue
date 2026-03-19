@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { getContactData } from '@/services/contactServices';
-import type { IContactData } from '@/utils/interfaces';
-import { onMounted, ref } from 'vue';
+
+import { onMounted } from 'vue';
 import { formatLink } from '@/utils/helpers';
 import ContactPlaceholder from './placeholders/ContactPlaceholder.vue';
+import { useContactData } from '@/composables/ContactComposable';
 
-    const contactData = ref<IContactData | null>(null)
+    
+    const {contactData,loading,loadContact} = useContactData();
 
 
     onMounted(async()=>{
         try {
-            contactData.value = await getContactData();
+            await loadContact();
         } catch (error:unknown) {
             if((error as {response:{data:{error:string}}})){
             console.log((error as {response:{data:{error:string}}}).response.data.error)
@@ -18,10 +19,12 @@ import ContactPlaceholder from './placeholders/ContactPlaceholder.vue';
         }
     })
 
+   
+
 </script>
 
 <template>
-    <section class="p-12" v-if="contactData">
+    <section class="p-12" v-if="!loading">
         <div class="text-center">
             <h2 class="font-semibold text-3xl ">{{ contactData?.sectionTitle }}</h2>
             <p class="dark:text-gray-400 text-zinc-600">{{ contactData?.sectionSubtitle }}</p>

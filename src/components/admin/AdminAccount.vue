@@ -1,33 +1,31 @@
 <script setup lang="ts">
     import { inject, onMounted, ref } from 'vue'
     import type { generateAlert, IUserData} from '@/utils/interfaces'
-    import { getUserData } from '@/services/userService'
-    import {  confirmPassword, editUser } from '@/services/authServices';
-import AdminAccountPlaceholder from '../placeholders/AdminAccountPlaceholder.vue';
+    import {  confirmPassword } from '@/services/authServices';
+    import AdminAccountPlaceholder from '../placeholders/AdminAccountPlaceholder.vue';
+import { useUserData } from '@/composables/UserComposable';
 
 
-    const userData = ref<IUserData | null>(null)
-    const loadingData = ref<boolean>(false)
+    const {loadUser,userData,loading,saveUser} = useUserData();
+    
+    
     const confirmModal = ref<boolean>(false);
     const changePasswordModal = ref<boolean>(false);
     const passwordVisibility = ref<boolean>(false);
     const password = ref<string>('')
     const passwordConfirm = ref<string>('')
-
     const generateAlert:generateAlert = inject('generateAlert')!
     const logout:()=>void = inject('logout')!;
 
     onMounted(async()=>{
             try {
-                loadingData.value = true;
-                userData.value = await getUserData();
-                loadingData.value = false;
+                await loadUser();               
             } catch (error:unknown) {
                 if((error as {response:{data:{error:string}}})){
                 console.log((error as {response:{data:{error:string}}}).response.data.error)
             }
             }
-        })
+    })
 
     function handlePasswordVisibility(e:Event){
         e.preventDefault()
@@ -52,7 +50,7 @@ import AdminAccountPlaceholder from '../placeholders/AdminAccountPlaceholder.vue
     async function handleChangePassword(){
         if(password.value === passwordConfirm.value){
             try {
-                await editUser({password:password.value})
+                await saveUser({password:password.value} as IUserData)
                 generateAlert(true, "Senha redefinida com sucesso! redirecionando...")
                 setTimeout(() => {
                     logout()
@@ -72,7 +70,7 @@ import AdminAccountPlaceholder from '../placeholders/AdminAccountPlaceholder.vue
         e.preventDefault()
         try {
             
-                await editUser({email:userData.value?.email})
+                await saveUser({email:userData.value?.email} as IUserData)
                 generateAlert(true, "Email redefinido com sucesso! redirecionando...")
                 setTimeout(() => {
                     logout()
@@ -84,7 +82,7 @@ import AdminAccountPlaceholder from '../placeholders/AdminAccountPlaceholder.vue
 </script>
 
 <template>
-    <form v-if="!loadingData" method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
+    <form v-if="!loading" method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
         <div>
             <small>*Ao redefinir o E-mail, você será automaticamente deslogado!</small><br>
             <label for="" class="font-semibold">E-mail:</label>

@@ -10,18 +10,20 @@
     import type { ErrorResponse, generateAlert, IModalData, IProjectsData, ITagsData, ITagsGroupsData } from '@/utils/interfaces';
 
     //Services
-    import { createProject, deleteProject, destroyManyImages, editProject, getProjectsData,uploadProjectImages } from '@/services/projectsServices';
+    import { createProject, deleteProject, destroyManyImages, editProject,uploadProjectImages } from '@/services/projectsServices';
     import { getTagsGroupsData } from '@/services/tagsGroupsServices';
     import { searchTags } from '@/services/tagsServices';
-import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
+    import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
+    import { useProjectsData } from '@/composables/ProjectComposable';
+    import { useTagsData } from '@/composables/TagsComposable';
 
     
 
-    const projectsData = ref<IProjectsData[]>([] as IProjectsData[])
-    const projectsLoading = ref<boolean>(false)
+    const {loading:projectsLoading,loadProjects,saveProject,projectsData,clearCache} = useProjectsData()
     const modalVisibility = ref<boolean>(false)
     const modalData = ref<IModalData>({} as IModalData)
-    const allTags = ref<ITagsGroupsData[]>([] as ITagsGroupsData[])
+
+    const {loadTags,tagsData:allTags} = useTagsData()
     const showingTagGroupId = ref<number | null>(null)
     const showingTags = ref<ITagsData[]>([] as ITagsData[])
     const action = ref<'create'|'edit'>('create');
@@ -44,8 +46,8 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
     onMounted(async ()=>{
         try {
             projectsLoading.value = true
-            projectsData.value = await getProjectsData();
-            allTags.value = await getTagsGroupsData();
+            await Promise.all([loadProjects(),loadTags()])
+            
 
             projectsLoading.value = false;
         } catch (error:unknown) {
@@ -195,7 +197,7 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
                 })
 
                 //Modify allTags array to show seleected tags on project
-                allTags.value = allTags.value.map((group:ITagsGroupsData)=>{               
+                allTags.value = allTags.value!.map((group:ITagsGroupsData)=>{               
                             group.tags = group.tags?.map((tag:ITagsData)=>{
                                 //Tag is selected
                                 if(tagsOnProject.includes(tag.id)){
@@ -284,7 +286,8 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
             try {
                 const selectedTags = showingTags.value.filter((tag)=> tag.selected)
                 await createProject({...modalData.value,tags:selectedTags} as IModalData);
-                projectsData.value = await getProjectsData();
+                clearCache();
+                await loadProjects()
 
                 imagesToUpload.value = [];
                 resetModalData();
@@ -304,10 +307,8 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
         if(validateForm()){
             try {
                 const selectedTags = showingTags.value.filter((tag)=> tag.selected)
-                await editProject({...modalData.value,tags:selectedTags} as IModalData);
-                console.log(selectedTags)
+                await saveProject({...modalData.value,tags:selectedTags} as IModalData)               
                 await destroyManyImages(imagesToDelete.value)
-                projectsData.value = await getProjectsData();
                 imagesToDelete.value = []
                 imagesToUpload.value = [];
                 resetModalData();
@@ -327,7 +328,8 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
         try {
                
                 await deleteProject(modalData.value.id!);
-                projectsData.value = projectsData.value.filter((project)=> project.id !== modalData.value.id!)                
+                clearCache();              
+                projectsData.value = projectsData.value.filter((project)=> project.id !== modalData.value.id!)  
                 resetModalData();
 
                 generateAlert(true,'Projeto apagado com sucesso!');
@@ -354,6 +356,8 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
         }
         try {
             imagesToDelete.value.push(image.image)
+
+            //Active respective bullet of new selected image
             modalData.value.images = modalData.value.images.filter((img,imgIndex)=> {
                 if(img.image.id != image.image.id){
                     return img
@@ -399,7 +403,7 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
     function addTag(tag:ITagsData){  
         hasEdit.value = true;
 
-        const group = allTags.value.filter((info)=> info.id === tag.tagGroupId)
+        const group = allTags.value!.filter((info)=> info.id === tag.tagGroupId)
         group[0]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = true}} )    
         handleShowingGroup()
         
@@ -408,7 +412,7 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
     function removeTag(tag:ITagsData,groupIndex:number){
         hasEdit.value = true;
 
-        allTags.value[groupIndex]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = false}} )
+        allTags.value![groupIndex]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = false}} )
         handleShowingGroup()      
     }
 
@@ -421,7 +425,7 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
         const tagsArr:ITagsData[] = []
 
         if(showingTagGroupId.value){
-            allTags.value.map((group:ITagsGroupsData) => {  
+            allTags.value!.map((group:ITagsGroupsData) => {  
                 if(group.id === showingTagGroupId.value){
                     const data = group.tags!.map((innerTag)=>{return {...innerTag,color:group.color}})
                     data?.map((info:ITagsData)=>{
@@ -430,7 +434,7 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
                 }       
             })
         }else{
-            allTags.value.map((group:ITagsGroupsData) => {     
+            allTags.value!.map((group:ITagsGroupsData) => {     
                 const data = group.tags!.map((innerTag)=>{return {...innerTag,color:group.color}})
                 data?.map((info:ITagsData)=>{
                     tagsArr.push(info)
@@ -570,7 +574,7 @@ import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
                                     <div class="dark:bg-zinc-800 bg-gray-200 border dark:border-zinc-600 border-gray-400 rounded-md flex w-full">
                                         <aside class="border-r max-md:w-40 dark:border-zinc-600 border-gray-400 ">
                                             <ul>
-                                                <li @click="selectGroup()" class=" px-4 py-2 cursor-pointer duration-200 dark:hover:bg-zinc-700 hover:bg-gray-300">Todos ({{ allTags.reduce((total,actual) => total + (actual.tags!.length),0) }})</li>
+                                                <li @click="selectGroup()" class=" px-4 py-2 cursor-pointer duration-200 dark:hover:bg-zinc-700 hover:bg-gray-300">Todos ({{ allTags!.reduce((total,actual) => total + (actual.tags!.length),0) }})</li>
                                                 <li v-for="(group) in allTags" @click="selectGroup(group.id)" :key="group.id" class="border-t dark:border-zinc-600 border-gray-400 px-4 py-2 cursor-pointer duration-200 dark:hover:bg-zinc-700 hover:bg-gray-300">{{ group.name }} ({{ group.tags!.length }})</li>    
                                             </ul>
                                         </aside>

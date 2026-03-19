@@ -13,7 +13,7 @@ export default defineConfigWithVueTs(
     name: 'app/files-to-lint',
     files: ['**/*.{vue,ts,mts,tsx}'],
     rules:{
-      "no-unused-vars":'off'
+      "no-unused-vars":"off"
     }
   },
 

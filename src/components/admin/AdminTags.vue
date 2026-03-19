@@ -1,15 +1,16 @@
 <script setup lang="ts">
     import { ref,onMounted, inject } from 'vue';
     import type { ErrorResponse, generateAlert, ITagsCoordinates, ITagsData, ITagsGroupsData } from '@/utils/interfaces';
-    import { createTagsGroups, deleteTagsGroup, editTagGroup, getTagsGroupsData } from '@/services/tagsGroupsServices'
-    import { createTags, deleteTags, editTag } from '@/services/tagsServices';
+    import { createTagsGroups, deleteTagsGroup } from '@/services/tagsGroupsServices'
+    import { createTags, deleteTags } from '@/services/tagsServices';
     import TagBox from '../TagBox.vue';
-import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
+    import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
+import { useTagsData } from '@/composables/TagsComposable';
     const generateAlert:generateAlert = inject('generateAlert')!
 
     const creationFormVisibility = ref<boolean>(false)
-    const tagsGroupsData = ref<ITagsGroupsData[] | null>(null)
-    const loadingData = ref<boolean>(false)
+
+    const {tagsData,loadTags,loading,saveTag,saveTagGroup,clearCache} = useTagsData();
     const creationTagFormVisibility = ref<boolean>(false);
 
     const newTag = ref<{name:string}>({name:''})
@@ -18,10 +19,8 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
 
     onMounted(async()=>{
 
-    try {
-        loadingData.value = true
-        tagsGroupsData.value = await getTagsGroupsData();
-        loadingData.value = false;
+    try {    
+        await loadTags();
     } catch (error:unknown) {
         console.log('error')
         if((error as {response:{data:{error:string}}})){
@@ -37,8 +36,6 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
         creationTagFormVisibility.value = false;
         editingTag.value = null;
     }
-
-    
 
     function handleCreationForm(){
         creationFormVisibility.value = !creationFormVisibility.value
@@ -86,8 +83,8 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
         try {
             const create = await createTags(newTag.value,groupId);
             if(create.status == 200){
-
-                tagsGroupsData.value = await getTagsGroupsData();
+                clearCache();
+                await loadTags();
                 generateAlert(true,'Tag criada com sucesso!')
                 creationTagFormVisibility.value = false;
             }
@@ -108,7 +105,9 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
         try {
             const create = await createTagsGroups(newTagsGroup.value);
             if(create.status == 200){
-                tagsGroupsData.value = await getTagsGroupsData();
+                clearCache();
+                await loadTags();
+
                 //Criar popup de notificação
                 generateAlert(true,'Grupo criado com sucesso!')
                 creationFormVisibility.value = false;
@@ -141,12 +140,12 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     }
 
     async function handleEditTag(groupIndex:number,skillIndex:number){
-        const skill:ITagsData = tagsGroupsData.value![groupIndex]!.tags![skillIndex]!;
+        const skill:ITagsData = tagsData.value![groupIndex]!.tags![skillIndex]!;
         try {
-            const edit = await editTag(skill);
-            if(edit.status == 200){
+            await saveTag(skill);
+            
                 generateAlert(true,'Nome editado com sucesso')
-            }
+            
         } catch (error) {
             if((error as ErrorResponse)){
                 console.log((error as ErrorResponse).response.data.error)
@@ -157,12 +156,11 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     }
 
     async function handleEditTagGroup(groupIndex:number){
-        const tagGroup:ITagsGroupsData = tagsGroupsData.value![groupIndex]!;
+        const tagGroup:ITagsGroupsData = tagsData.value![groupIndex]!;
         try {
-            const edit = await editTagGroup({id:tagGroup.id,name:tagGroup.name,color:tagGroup.color} as ITagsGroupsData);
-            if(edit.status == 200){
-                generateAlert(true,'Grupo editado com sucesso')
-            }
+            await saveTagGroup({id:tagGroup.id,name:tagGroup.name,color:tagGroup.color} as ITagsGroupsData);
+            generateAlert(true,'Grupo editado com sucesso')
+            
         } catch (error) {
             if((error as ErrorResponse)){
                 console.log((error as ErrorResponse).response.data.error)
@@ -173,13 +171,14 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     }
 
     async function handleDeleteTag(groupIndex:number,tagIndex:number){
-        const tag:ITagsData = tagsGroupsData.value![groupIndex]!.tags![tagIndex]!;
+        const tag:ITagsData = tagsData.value![groupIndex]!.tags![tagIndex]!;
 
         try {
             const deleteSkill = await deleteTags(tag.id);
+            clearCache()
             if(deleteSkill.status == 200){
                 generateAlert(true,'Especialidade apagada com sucesso')
-                tagsGroupsData.value![groupIndex]!.tags! = tagsGroupsData.value![groupIndex]!.tags!.filter((data)=>data.id !== tag.id)
+                tagsData.value![groupIndex]!.tags! = tagsData.value![groupIndex]!.tags!.filter((data)=>data.id !== tag.id)
             }
         } catch (error) {
             if((error as ErrorResponse)){
@@ -189,13 +188,14 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
     }
 
     async function handleDeletetagGroup(groupIndex:number){
-        const group:ITagsGroupsData = tagsGroupsData.value![groupIndex]!;
+        const group:ITagsGroupsData = tagsData.value![groupIndex]!;
 
         try {
             const deleteGroup = await deleteTagsGroup(group.id);
+            clearCache()
             if(deleteGroup.group.status == 200){
                 generateAlert(true,'Grupo apagado com sucesso');
-                tagsGroupsData.value = tagsGroupsData.value!.filter((data)=> data.id !== group.id);
+                tagsData.value = tagsData.value!.filter((data)=> data.id !== group.id);
             }
         } catch (error) {
             if((error as ErrorResponse)){
@@ -208,7 +208,7 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
 <template>
     <section class="w-full">
         <div class="w-full border-b py-2">
-            <button @click="handleCreationForm" :disabled="loadingData" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg">
+            <button @click="handleCreationForm" :disabled="loading" class="cursor-pointer flex items-center ml-auto space-x-2 py-1 px-4 bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 rounded-lg">
                 <v-icon name="bi-plus-circle-fill" class="fill-zinc-800" scale="1.5"/>
                 <span class="font-semibold">Criar novo grupo de Tags</span>
             </button>     
@@ -230,14 +230,14 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
         <section>
 
            
-            <template v-if="!loadingData">    
-                <div class="tagWrapper" v-for="(group,groupIndex) in tagsGroupsData" :key="group.id">         
+            <template v-if="!loading">    
+                <div class="tagWrapper" v-for="(group,groupIndex) in tagsData" :key="group.id">         
                     <div @click="openContainer($event)" class="tagHandler flex items-center justify-between cursor-pointer  py-4  rounded-md duration-200 select-none">
                         <div class="flex items-center gap-2">
                             <v-icon name="bi-chevron-down" class="downArrow duration-200" scale="1.4" />
                             <div @click="(e)=>{e.stopPropagation()}" v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == undefined" class="flex items-center gap-2">
-                                <input  type="text" v-model="tagsGroupsData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
-                                <input  v-model="tagsGroupsData![groupIndex]!.color" type="color" name="color" id="" class="h-12 w-24 cursor-pointer">
+                                <input  type="text" v-model="tagsData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
+                                <input  v-model="tagsData![groupIndex]!.color" type="color" name="color" id="" class="h-12 w-24 cursor-pointer">
                             </div>
                             <TagBox v-else :name="group.name" :bgcolor="group.color" :scale="1.3" class="ml-4"/>
                         </div>
@@ -291,7 +291,7 @@ import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
                             </div>                                    
                             <div class="containerItemSingle flex items-center justify-between pl-6 py-1" v-for="(tag,tagIndex) in group.tags" :key="tag.id">
                                 <div class="flex items-center gap-2">
-                                    <input v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" type="text" v-model="tagsGroupsData![groupIndex]!.tags![tagIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">           
+                                    <input v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" type="text" v-model="tagsData![groupIndex]!.tags![tagIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">           
                                     <h6 v-else class="text-lg">{{ tag.name }}</h6>
                                 </div>
                                 <div v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" class="flex items-center gap-2 actionBtn pr-2">

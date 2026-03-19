@@ -1,19 +1,16 @@
 <script setup lang="ts">
-    import { computed, inject, onMounted, ref } from 'vue'
+    import { computed, inject, onMounted } from 'vue'
     import type { ErrorResponse, generateAlert, IContactData } from '@/utils/interfaces'
-    import { editContactData, getContactData } from '@/services/contactServices'
     import {vMaska} from 'maska/vue'
     import AdminContactPlaceholder from '../placeholders/AdminContactPlaceholder.vue'
+    import { useContactData } from '@/composables/ContactComposable'
 
-    const contactData = ref<IContactData>({} as IContactData)
-    const loadingData = ref<boolean>(false)
+    const {contactData,loadContact,saveContact} = useContactData();
     const generateAlert:generateAlert = inject('generateAlert')!
 
     onMounted(async()=>{
         try {
-            loadingData.value = true
-            contactData.value = await getContactData();
-            loadingData.value = false
+            await loadContact();     
         } catch (error:unknown) {
             if((error as {response:{data:{error:string}}})){
             console.log((error as {response:{data:{error:string}}}).response.data.error)
@@ -22,7 +19,7 @@
     })
 
     const maskOptions = computed(()=>{
-        if(contactData.value.whatsapp){
+        if(contactData.value!.whatsapp){
             if(contactData.value!.whatsapp.length < 14){
                 return '(##)####-#####'
             }else{
@@ -37,10 +34,9 @@
         e.preventDefault();
 
         try {
-            const response = await editContactData(contactData.value as IContactData);
-            if(response.status == 200){
-                generateAlert(true, "Conteúdo editado com sucesso!")
-            }
+            await saveContact(contactData.value as IContactData);  
+            generateAlert(true, "Conteúdo editado com sucesso!")
+            
         } catch (error:unknown) {
             if((error as ErrorResponse)){
                 if((error as ErrorResponse).response.data.statusCode == "MISSING_PARAMS"){
@@ -56,7 +52,7 @@
 </script>
 
 <template>
-    <form v-if="!loadingData" method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
+    <form v-if="contactData" method="post" class="w-8/12 max-md:w-full md:min-w-225 mx-auto space-y-4">
         <div>
             <label for="" class="font-semibold">*Título:</label>
             <input placeholder="Título..." type="text" name="CallPhrase" v-model="contactData!.sectionTitle" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-full h-10 border pl-2 rounded-lg">
