@@ -4,6 +4,7 @@ import type { ITagsData, ITagsGroupsData } from "@/utils/interfaces";
 import { ref } from "vue";
 
 const cache_key:string = 'tagsData';
+const enableCache = import.meta.env.VITE_ENABLE_CACHE === 'true';
 
 export function useTagsData(){
     const loading = ref<boolean>(false);
@@ -12,7 +13,7 @@ export function useTagsData(){
     async function loadTags(){
         loading.value = true;
         const cache = sessionStorage.getItem(cache_key);
-        if(cache){
+        if(cache && enableCache){
             tagsData.value = JSON.parse(cache)
             loading.value = false;
             return;

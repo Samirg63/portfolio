@@ -51,7 +51,6 @@ export async function editTagGroup(data:ITagsGroupsData){
 
 export async function deleteTagsGroup(id:number){
     const deleteGroup = await axios.delete(url+`/${id}`);
-    console.log(deleteGroup)
     
     if(deleteGroup.status == 200){
         return deleteGroup.data;

@@ -21,8 +21,8 @@ import { useTagsData } from '@/composables/TagsComposable';
 
     try {    
         await loadTags();
+        console.log(tagsData.value)
     } catch (error:unknown) {
-        console.log('error')
         if((error as {response:{data:{error:string}}})){
         console.log((error as {response:{data:{error:string}}}).response.data.error)
     }
@@ -83,6 +83,10 @@ import { useTagsData } from '@/composables/TagsComposable';
         try {
             const create = await createTags(newTag.value,groupId);
             if(create.status == 200){
+                tagsData.value?.map((group)=>{
+                    if(group.id === groupId){
+                        group.tags?.push({tagGroupId:groupId,name:newTag.value.name} as ITagsData)
+                }})
                 clearCache();
                 generateAlert(true,'Tag criada com sucesso!')
                 creationTagFormVisibility.value = false;
@@ -99,14 +103,13 @@ import { useTagsData } from '@/composables/TagsComposable';
 
     async function createGroup(e:Event){
         e.preventDefault();
-
-
         try {
-            const create = await createTagsGroups(newTagsGroup.value);
+            const create:{status:number,body:ITagsGroupsData} = await createTagsGroups(newTagsGroup.value) as {status:number,body:ITagsGroupsData};
+            console.log(create)
             if(create.status == 200){
                 clearCache();
-
-                //Criar popup de notificação
+                 tagsData.value?.push({...newTagsGroup.value,id:create.body.id,tags:[]}as unknown as ITagsGroupsData)
+                
                 generateAlert(true,'Grupo criado com sucesso!')
                 creationFormVisibility.value = false;
                 newTagsGroup.value = {
@@ -169,13 +172,14 @@ import { useTagsData } from '@/composables/TagsComposable';
     }
 
     async function handleDeleteTag(groupIndex:number,tagIndex:number){
+        console.log('deletetag')
         const tag:ITagsData = tagsData.value![groupIndex]!.tags![tagIndex]!;
 
         try {
-            const deleteSkill = await deleteTags(tag.id);
+            const deleteTag = await deleteTags(tag.id);
             clearCache()
-            if(deleteSkill.status == 200){
-                generateAlert(true,'Especialidade apagada com sucesso')
+            if(deleteTag.status == 200){
+                generateAlert(true,'Tag apagada com sucesso')
                 tagsData.value![groupIndex]!.tags! = tagsData.value![groupIndex]!.tags!.filter((data)=>data.id !== tag.id)
             }
         } catch (error) {
@@ -191,11 +195,12 @@ import { useTagsData } from '@/composables/TagsComposable';
         try {
             const deleteGroup = await deleteTagsGroup(group.id);
             clearCache()
-            if(deleteGroup.group.status == 200){
+            if(deleteGroup.status == 200){
                 generateAlert(true,'Grupo apagado com sucesso');
                 tagsData.value = tagsData.value!.filter((data)=> data.id !== group.id);
             }
         } catch (error) {
+            generateAlert(false,'Erro ao apagar o grupo');
             if((error as ErrorResponse)){
                 console.log((error as ErrorResponse).response.data.error)
             }
@@ -287,7 +292,7 @@ import { useTagsData } from '@/composables/TagsComposable';
                                     </div>
                                 </form>
                             </div>                                    
-                            <div class="containerItemSingle flex items-center justify-between pl-6 py-1" v-for="(tag,tagIndex) in group.tags" :key="tag.id">
+                            <div class="containerItemSingle flex items-center justify-between pl-6 py-1" v-for="(tag,tagIndex) in group.tags" :key="tagIndex">
                                 <div class="flex items-center gap-2">
                                     <input v-if="editingTag?.groupIndex == groupIndex && editingTag?.tagIndex == tagIndex" type="text" v-model="tagsData![groupIndex]!.tags![tagIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">           
                                     <h6 v-else class="text-lg">{{ tag.name }}</h6>

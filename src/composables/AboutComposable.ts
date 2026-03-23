@@ -3,6 +3,7 @@ import type { IAboutData } from "@/utils/interfaces";
 import { ref } from "vue";
 
 const cache_key:string = 'aboutData';
+const enableCache = import.meta.env.VITE_ENABLE_CACHE === 'true';
 
 export function useAboutData(){
     const loading = ref<boolean>(false);
@@ -11,7 +12,7 @@ export function useAboutData(){
     async function loadAbout(){
         loading.value = true;
         const cache = sessionStorage.getItem(cache_key);
-        if(cache){
+        if(cache && enableCache){
             aboutData.value = JSON.parse(cache)
             loading.value = false;
             return;

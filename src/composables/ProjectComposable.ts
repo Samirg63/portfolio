@@ -3,6 +3,7 @@ import type { IModalData, IProjectsData } from "@/utils/interfaces";
 import { ref } from "vue";
 
 const cache_key:string = 'projectsData';
+const enableCache = import.meta.env.VITE_ENABLE_CACHE === 'true';
 
 export function useProjectsData(){
     const loading = ref<boolean>(false);
@@ -11,7 +12,7 @@ export function useProjectsData(){
     async function loadProjects(){
         loading.value = true;
         const cache = sessionStorage.getItem(cache_key);
-        if(cache){
+        if(cache && enableCache){
             projectsData.value = JSON.parse(cache)
             loading.value = false;
             return;

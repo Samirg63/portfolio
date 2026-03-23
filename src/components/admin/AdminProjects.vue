@@ -285,14 +285,11 @@
 
             try {
                 const selectedTags = showingTags.value.filter((tag)=> tag.selected)
-                await createProject({...modalData.value,tags:selectedTags} as IModalData);
+                const create:IProjectsData = await createProject({...modalData.value,tags:selectedTags} as IModalData) as unknown as IProjectsData;
+                projectsData.value.push(create)
                 clearCache();
-                
-
                 imagesToUpload.value = [];
                 resetModalData();
-                
-
                 generateAlert(true,'Projeto criado com sucesso!');
             } catch (error:unknown) {
                 if(error as ErrorResponse){
@@ -331,7 +328,6 @@
                 clearCache();              
                 projectsData.value = projectsData.value.filter((project)=> project.id !== modalData.value.id!)  
                 resetModalData();
-
                 generateAlert(true,'Projeto apagado com sucesso!');
             } catch (error:unknown) {
                 if(error as ErrorResponse){

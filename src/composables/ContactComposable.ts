@@ -3,6 +3,7 @@ import type { IContactData } from "@/utils/interfaces";
 import { ref } from "vue";
 
 const cache_key:string = 'contactData';
+const enableCache = import.meta.env.VITE_ENABLE_CACHE === 'true';
 
 export function useContactData(){
     const loading = ref<boolean>(false);
@@ -12,7 +13,7 @@ export function useContactData(){
         loading.value = true;
 
         const cache = sessionStorage.getItem(cache_key);
-        if(cache){
+        if(cache && enableCache){
             contactData.value = JSON.parse(cache)
             loading.value = false;
             return;
