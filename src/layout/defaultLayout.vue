@@ -6,12 +6,14 @@ import { provide, ref } from 'vue';
   import { useRoute } from 'vue-router';
   import { logout as authLogout } from '@/services/authServices';
 
-  const route = useRoute()
-  const onAdmin = ref<boolean>((route.path.split('/')[1] == 'admin'));
+    const route = useRoute()
+    const onAdmin = ref<boolean>((route.path.split('/')[1] == 'admin'));
     const drawerOpen = ref<boolean>(false)
+    const logged = ref<boolean>(Boolean(localStorage.getItem('user')!))
 
     const logout = function(){
         onAdmin.value = false;
+        logged.value = false;
         authLogout();
     }
 
@@ -29,7 +31,7 @@ import { provide, ref } from 'vue';
         <SideNav v-if="!onAdmin" />
         <AdminSideNav v-else />
         <main class="w-full h-full">
-            <HeaderNav :onAdmin="onAdmin" @logout="logout"/>
+            <HeaderNav :onAdmin="onAdmin" :logged="logged" @logout="logout"/>
             <section id="mainContent" class="overflow-y-auto h-full">
                 <router-view/>
             </section>

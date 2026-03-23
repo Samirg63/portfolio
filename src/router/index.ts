@@ -12,7 +12,8 @@ import AdminHome from '@/components/admin/AdminHome.vue'
 import AdminProjects from '@/components/admin/AdminProjects.vue'
 import AdminTags from '@/components/admin/AdminTags.vue'
 import AdminHardskills from '@/components/admin/AdminHardskills.vue'
-import ForgotPassword from '@/components/ForgotPassword.vue'
+import ForgotPassword from '@/views/ForgotPassword.vue' 
+import NotFound from '@/views/NotFound.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -67,6 +68,10 @@ const router = createRouter({
     {
       path:'/admin/auth',
       component:AuthView
+    },
+    {
+      path:'/**',
+      component:NotFound
     }
   ],
 })

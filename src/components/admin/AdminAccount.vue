@@ -50,6 +50,7 @@ import { useUserData } from '@/composables/UserComposable';
     async function handleChangePassword(){
         if(password.value === passwordConfirm.value){
             try {
+                
                 await saveUser({password:password.value} as IUserData)
                 generateAlert(true, "Senha redefinida com sucesso! redirecionando...")
                 setTimeout(() => {
@@ -68,9 +69,10 @@ import { useUserData } from '@/composables/UserComposable';
 
     async function handleChangeEmail(e:Event){
         e.preventDefault()
+
         try {
             
-                await saveUser({email:userData.value?.email} as IUserData)
+                await saveUser({email:userData.value?.email,id:userData.value?.id} as IUserData)
                 generateAlert(true, "Email redefinido com sucesso! redirecionando...")
                 setTimeout(() => {
                     logout()

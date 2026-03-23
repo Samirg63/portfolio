@@ -1,3 +1,4 @@
+import { editUser } from "@/services/authServices";
 import { editUserData, getUserData } from "@/services/userService";
 import type { IUserData } from "@/utils/interfaces";
 import { ref } from "vue";
@@ -34,7 +35,11 @@ export function useUserData(){
     async function saveUser(newData:IUserData){
         try {
             loading.value = true;
-            await editUserData(newData)
+            if(newData.password){
+                await editUser({password:newData.password})
+            }else{
+                await editUserData(newData)
+            }
             userData.value = newData;
             clearCache();
         } finally{

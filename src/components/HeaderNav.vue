@@ -8,7 +8,8 @@ import { VueSpinnerDots } from 'vue3-spinners';
 
     
     const props = defineProps<{
-        onAdmin:boolean
+        onAdmin:boolean,
+        logged:boolean
     }>()
     const {handleDrawer}:IMenuDrawer = inject('menuDrawer')!
     const curriculumInput = ref<File | null>(null);
@@ -16,7 +17,7 @@ import { VueSpinnerDots } from 'vue3-spinners';
     const generateAlert:generateAlert = inject('generateAlert')!
     const userData = ref<IUserData>({} as IUserData)
     const isDarkMode = ref<boolean>(getTheme())
-    const logged = ref<boolean>(Boolean(localStorage.getItem('user')!))
+    
     
         
         
@@ -100,9 +101,10 @@ import { VueSpinnerDots } from 'vue3-spinners';
                     <v-icon name="bi-moon-fill"  scale=".9" fill="#e5e7eb"/>
                 </div>
             </button>
-            <button v-if="props.onAdmin" class="mt-1" @click="()=>{logged=false;$emit('logout')}">
+            <button v-if="props.onAdmin" class="mt-1" @click="()=>{$emit('logout')}">
                 <v-icon name="io-exit" scale="1.2" class="cursor-pointer stroke-gray-200"/>
             </button>
+
             <a href="/" v-if="props.onAdmin"><v-icon name="io-home" class="dark:fill-gray-200 fill-zinc-700" scale="1.2"/></a>
             <a href="/admin" v-else-if="logged"><v-icon name="md-spacedashboard" class="dark:fill-gray-200 fill-zinc-700" scale="1.2"/></a>
         </div>

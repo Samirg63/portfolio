@@ -49,7 +49,6 @@ export function useTagsData(){
         try {
             await editTag(newData)
             clearCache();
-    
         }catch(e:unknown){
             throw e;
         }

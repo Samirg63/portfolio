@@ -37,11 +37,12 @@ import { useRoute } from 'vue-router';
         if(password.value === passwordConfirm.value){
             try {
                 if(await verifyToken(params.value)){
-                    console.log(password.value)
                     await editUser({password:password.value})
                     await destroyTokens();
                     generateAlert(true, "Senha redefinida com sucesso! redirecionando...")
+
                     setTimeout(() => {
+                        
                         router.push('/admin/auth')
                     }, 3000);
                 }

@@ -95,20 +95,20 @@ export async function generateToken(secretCode:string):Promise<{token:string,id:
 }
 
 export async function verifyToken(body:{token:string,id:string}){
-    const token:IHttpResponse = await axios.post(url+`/verifyToken`,JSON.stringify(body),{
-        headers:{
-            'Content-Type':'application/json'
-        }
-    });
-    if(token.data.status == 200){
+    
+    try {
+        const token:IHttpResponse = await axios.post(url+`/verifyToken`,JSON.stringify(body),{
+            headers:{
+                'Content-Type':'application/json'
+            }
+        });
         return (token.data.body! as {success:boolean}).success
-    }else{
-        if(typeof token.data.error == 'string'){
-            throw new Error(token.data.error)
-        }else{
-            throw token.data.error
-        }
+    } catch (error) {      
+        throw error
     }
+    
+    
+    
 
 }
 

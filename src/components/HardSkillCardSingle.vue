@@ -15,6 +15,7 @@ import type { IHardskillsGroupsData } from '@/utils/interfaces';
             <div class=" mt-4 box cursor-default" v-if="index <=4">
                 <div class="flex items-center gap-2">
                     <v-icon :name="skills.icon" scale="2"/>
+                    
                     <h4 class="font-semild text-xl">{{ skills.name }}</h4>
                 </div>
                 <div class="divider w-0 border-b"></div>
@@ -35,7 +36,8 @@ import type { IHardskillsGroupsData } from '@/utils/interfaces';
                             <UTooltip v-if="index > 4" :text="skills.name" :content="{side:'top'}" arrow :ui="{background: 'bg-indigo-600'}">
                                 
                                 <div class="dark:hover:bg-zinc-600 hover:bg-gray-100 p-1.5 rounded-md" >
-                                    <v-icon :name="skills.icon" scale="2"/>
+                                    <v-icon v-if="skills.icon" :name="skills.icon" scale="2"/>
+                                    <h2 v-else class=" w-9.5 h-9.5 flex items-center justify-center text-2xl font-light capitalize">{{ skills.name.slice(0,2).toLowerCase() }}</h2>
                                 </div>        
                             </UTooltip>
                         </template>
