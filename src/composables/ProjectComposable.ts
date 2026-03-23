@@ -35,7 +35,6 @@ export function useProjectsData(){
     try {
         await editProject(newData)
         clearCache();
-        await loadProjects();
 
     }catch(e:unknown){
         throw e;

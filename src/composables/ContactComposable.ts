@@ -34,7 +34,7 @@ export function useContactData(){
             loading.value = true;
             await editContactData(newData)
             clearCache()
-            await loadContact()
+        
         }catch(e:unknown){
             throw e;
         } finally{

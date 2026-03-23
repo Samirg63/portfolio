@@ -37,7 +37,6 @@ export function useUserData(){
         try {
             loading.value = true;
             await editUserData(newData)
-
             userData.value = newData;
             clearCache();
         } finally{
@@ -53,7 +52,6 @@ export function useUserData(){
         userData,
         loading,
         loadUser,
-   
         saveUser,
         clearCache
     }

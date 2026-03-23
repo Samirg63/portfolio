@@ -287,7 +287,7 @@
                 const selectedTags = showingTags.value.filter((tag)=> tag.selected)
                 await createProject({...modalData.value,tags:selectedTags} as IModalData);
                 clearCache();
-                await loadProjects()
+                
 
                 imagesToUpload.value = [];
                 resetModalData();

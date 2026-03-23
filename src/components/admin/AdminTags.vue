@@ -84,7 +84,6 @@ import { useTagsData } from '@/composables/TagsComposable';
             const create = await createTags(newTag.value,groupId);
             if(create.status == 200){
                 clearCache();
-                await loadTags();
                 generateAlert(true,'Tag criada com sucesso!')
                 creationTagFormVisibility.value = false;
             }
@@ -106,7 +105,6 @@ import { useTagsData } from '@/composables/TagsComposable';
             const create = await createTagsGroups(newTagsGroup.value);
             if(create.status == 200){
                 clearCache();
-                await loadTags();
 
                 //Criar popup de notificação
                 generateAlert(true,'Grupo criado com sucesso!')

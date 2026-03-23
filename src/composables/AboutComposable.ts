@@ -32,7 +32,6 @@ export function useAboutData(){
         try {
             loading.value = true;
             await editAboutData(newData)
-
             aboutData.value = newData;
             sessionStorage.setItem(cache_key,JSON.stringify(newData))
         }catch(e:unknown){

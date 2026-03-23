@@ -33,7 +33,7 @@ export function useSkillsData(){
         try {
             await editHardskillGroup(newData)
             clearCache();
-            await loadSkills();
+            
     
         }catch(e:unknown){
             throw e;
@@ -49,7 +49,6 @@ export function useSkillsData(){
         try {
             await editHardskill(newData)
             clearCache();
-            await loadSkills();
     
         }catch(e:unknown){
             throw e;
