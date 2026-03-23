@@ -27,9 +27,9 @@ import { useAboutData } from '@/composables/AboutComposable';
 
     function getImage():string{
         if(aboutData.value?.image){
-            return aboutData.value!.image
+            return JSON.parse(aboutData.value!.image).url
         }else if(userImage.value){
-            return userImage.value
+            return userImage.value as string
         }else{
              return '/defaults/defaultUser.webp'
         }
