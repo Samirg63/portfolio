@@ -1,38 +1,38 @@
-import { editHardskillGroup, getHardskillsGroupsData } from "@/services/hardskillsGroupsServices";
-import { editHardskill } from "@/services/hardskillsServices";
-import type { IHardskillsData, IHardskillsGroupsData } from "@/utils/interfaces";
+import { editSkillGroup, getSkillsGroupsData } from "@/services/skillsGroupServices";
+import { editSkill } from "@/services/skillsServices";
+import type { ISkillsData, ISkillsGroupData } from "@/utils/interfaces";
 import { ref } from "vue";
 
-const cache_key:string = 'hardskillsGroupData';
+const cache_key:string = 'skillsGroupData';
 const enableCache = import.meta.env.VITE_ENABLE_CACHE === 'true';
 
 export function useSkillsData(){
     const loading = ref<boolean>(false);
-    const hardskillsGroupData = ref<IHardskillsGroupsData[]>([])
+    const skillsGroupData = ref<ISkillsGroupData[]>([])
 
     async function loadSkills(){
         loading.value = true;
         const cache = sessionStorage.getItem(cache_key);
         if(cache && enableCache){
-            hardskillsGroupData.value = JSON.parse(cache)
+            skillsGroupData.value = JSON.parse(cache)
             loading.value = false;
             return;
         }
 
         try{
-            const data = await getHardskillsGroupsData();
-            hardskillsGroupData.value = data;
+            const data = await getSkillsGroupsData();
+            skillsGroupData.value = data;
             sessionStorage.setItem(cache_key,JSON.stringify(data));
         } finally{
             loading.value = false;
         }
     }
 
-    async function saveSkillGroup(newData:IHardskillsGroupsData) {
+    async function saveSkillGroup(newData:ISkillsGroupData) {
         loading.value = true
     
         try {
-            await editHardskillGroup(newData)
+            await editSkillGroup(newData)
             clearCache();
             
     
@@ -44,11 +44,11 @@ export function useSkillsData(){
         }
     }
 
-    async function saveSkill(newData:IHardskillsData) {
+    async function saveSkill(newData:ISkillsData) {
         loading.value = true
     
         try {
-            await editHardskill(newData)
+            await editSkill(newData)
             clearCache();
     
         }catch(e:unknown){
@@ -64,7 +64,7 @@ export function useSkillsData(){
     }
 
     return{
-        hardskillsGroupData,
+        skillsGroupData,
         loading,
         loadSkills,
         saveSkillGroup,

@@ -16,6 +16,7 @@
     import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
     import { useProjectsData } from '@/composables/ProjectComposable';
     import { useTagsData } from '@/composables/TagsComposable';
+import { destroyMany } from '@/services/filesServices';
 
     
 
@@ -167,6 +168,7 @@
     async function toggleModal(id?:number){
         
         if(id){
+
             action.value = 'edit';
             descEditControl.value = true;
             projectsData.value.map((project:IProjectsData)=>{
@@ -218,9 +220,8 @@
 
                 
 
-
-                    modalData.value = ({...project,images:newImages} as unknown) as IModalData
-
+                modalData.value = ({...project,images:newImages} as unknown) as IModalData
+                
 
                 }
             })  
@@ -284,9 +285,18 @@
         if(validateForm()){
 
             try {
-                const selectedTags = showingTags.value.filter((tag)=> tag.selected)
-                const create:IProjectsData = await createProject({...modalData.value,tags:selectedTags} as IModalData) as unknown as IProjectsData;
-                projectsData.value.push(create)
+                const selectedTags:ITagsData[] = [];
+                allTags.value?.map((group:ITagsGroupsData)=>{
+                    group.tags?.map((tag:ITagsData)=>{
+                        if(tag.selected){
+                            selectedTags.push(tag)
+                        }
+                    })
+                    
+                })
+
+                await createProject({...modalData.value,tags:selectedTags} as IModalData) as unknown as IProjectsData;
+                await loadProjects();
                 clearCache();
                 imagesToUpload.value = [];
                 resetModalData();
@@ -303,9 +313,19 @@
     async function handleEdit(){
         if(validateForm()){
             try {
-                const selectedTags = showingTags.value.filter((tag)=> tag.selected)
-                await saveProject({...modalData.value,tags:selectedTags} as IModalData)               
+                const selectedTags:ITagsData[] = [];
+                allTags.value?.map((group:ITagsGroupsData)=>{
+                    group.tags?.map((tag:ITagsData)=>{
+                        if(tag.selected){
+                            selectedTags.push(tag)
+                        }
+                    })
+                    
+                })
+                 
+                await saveProject({...modalData.value,tags:selectedTags as unknown } as IModalData)             
                 await destroyManyImages(imagesToDelete.value)
+                await loadProjects()
                 imagesToDelete.value = []
                 imagesToUpload.value = [];
                 resetModalData();
@@ -325,13 +345,16 @@
         try {
                
                 await deleteProject(modalData.value.id!);
-                clearCache();              
+                await destroyMany(modalData.value.images.map((data)=>data.image))
+
                 projectsData.value = projectsData.value.filter((project)=> project.id !== modalData.value.id!)  
+
+                clearCache();              
                 resetModalData();
                 generateAlert(true,'Projeto apagado com sucesso!');
             } catch (error:unknown) {
                 if(error as ErrorResponse){
-                    console.log((error as ErrorResponse).response.data.error)
+                    console.log((error as ErrorResponse).response.data)
                     generateAlert(false,'Erro ao apagar projeto!');
                 }  
             }
@@ -346,6 +369,7 @@
         hasEdit.value = true;
         const image = modalData.value.images[imageIndex]!;
         let newSelected:boolean = false;
+
         if(image.selected){
             newSelected = true;
             
@@ -365,6 +389,12 @@
                     }
                 }
             })
+
+            //adjust coverImageIndex
+            if(modalData.value.coverImage >= imageIndex && modalData.value.coverImage > 0){
+                modalData.value.coverImage -=1
+            }
+            
             generateAlert(true,'Imagem apagada com sucesso!');
         } catch (error) {
             if(error as ErrorResponse){
@@ -397,10 +427,17 @@
     //popover Functions
 
     function addTag(tag:ITagsData){  
-        hasEdit.value = true;
-
-        const group = allTags.value!.filter((info)=> info.id === tag.tagGroupId)
-        group[0]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = true}} )    
+        hasEdit.value = true; 
+        allTags.value?.map((group:ITagsGroupsData)=>{
+            if(group.id === tag.groupId){
+                group.tags?.map((RootTag:ITagsData)=>{
+                    if(tag.id === RootTag.id){
+                        RootTag.selected = true;
+                    }
+                })
+            }
+        })
+        
         handleShowingGroup()
         
     }
@@ -594,7 +631,7 @@
                         </div>
                     </div>
                      <div class="w-full md:hidden">
-                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold max-md:hidden" @click="handleCreate">Criar</button>
+                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold max-md:hidden" @click="handleCreate" >Criar</button>
                         <div v-else class="flex items-center gap-4">
                             <UPopover mode="click" arrow :content="{align:'center',side:'top'}" :ui="{arrow:'fill-gray-200 '}">
                                 <button class="text-center cursor-pointer dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-zinc-700 bg-zinc-700 hover:bg-zinc-800 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold">Apagar</button>

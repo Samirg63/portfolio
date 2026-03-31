@@ -4,7 +4,7 @@
     import { inject, onMounted, ref } from 'vue'
     import { VueSpinner } from 'vue3-spinners'
     
-    import type { ErrorResponse, IAboutData,generateAlert} from '@/utils/interfaces'
+    import type { ErrorResponse,generateAlert} from '@/utils/interfaces'
     import { editPortrait, getAboutKeyData, removeImage } from '@/services/aboutServices'
 import AdminAboutPlaceholder from '../placeholders/AdminAboutPlaceholder.vue'
 import { useAboutData } from '@/composables/AboutComposable'
@@ -37,8 +37,9 @@ import { useAboutData } from '@/composables/AboutComposable'
 
     async function update(){
         if(aboutEdited.value){
+            
             try {
-                await saveAbout(aboutData.value as IAboutData);               
+                await saveAbout(aboutData.value!);               
                 generateAlert(true, "Conteúdo editado com sucesso!")               
             } catch (error:unknown) {
                 if((error as {response:{data:{error:string}}})){

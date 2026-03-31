@@ -148,9 +148,9 @@
             <p>Sobre mim</p>
             <div class="divider w-0 border-b" :class="(actSection == 'about')&& 'selected'"></div>
         </RouterLink>
-        <RouterLink @click="updateSelected('hardskills')" to="/admin/hardskills"  class="navBtn cursor-pointer text-center">
+        <RouterLink @click="updateSelected('skills')" to="/admin/skills"  class="navBtn cursor-pointer text-center">
             <p>Especialidades</p>
-            <div class="divider w-0 border-b" :class="(actSection == 'hardskills')&& 'selected'"></div>
+            <div class="divider w-0 border-b" :class="(actSection == 'skills')&& 'selected'"></div>
         </RouterLink>
         <RouterLink @click="updateSelected('tags')" to="/admin/tags"  class="navBtn cursor-pointer text-center">
             <p>Tags</p>

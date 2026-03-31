@@ -21,7 +21,7 @@ export interface IContactData{
     email:string,
     whatsapp:string,
     github:string,
-    linkedIn:string,
+    linkedin:string,
     sectionTitle:string,
     sectionSubtitle:string
 }
@@ -32,22 +32,22 @@ export interface IAboutData{
     text:string
 }
 
-export interface IHardskillsGroupsData{
+export interface ISkillsGroupData{
     id:number,
     name:string,
-    hardskills?:IHardskillsData[]
+    skills?:ISkillsData[]
 }
 
-export interface IHardskillsData{
+export interface ISkillsData{
     id:number,
     name:string,
     icon:string,
-    hardskillsGroupId:number
+    groupId:number
 }
 
-export interface IHardskillsCoordinates {
+export interface ISkillsCoordinates {
         groupIndex:number,
-        hardSkillsIndex?:number
+        skillsIndex?:number
 }
 
 
@@ -59,7 +59,7 @@ export interface ITagsGroupsData{
 }
 export interface ITagsData{
     id:number,
-    tagGroupId:number,
+    groupId:number,
     name:string,
     color?:string,
     selected?:boolean
@@ -105,7 +105,7 @@ export interface IModalData{
     coverImage:number,
     tags:{
         id:number,
-        tagGroupId:number,
+        groupId:number,
         name:string,
         color:string,
         selected:boolean

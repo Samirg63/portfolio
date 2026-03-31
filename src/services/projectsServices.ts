@@ -109,16 +109,8 @@ export async function editProject(data:IModalData){
 export async function deleteProject(projectId:number){
      try {
         const destroy:IHttpResponse = await axios.delete(url+`/${projectId}`)
-
-        if(destroy.data.status == 200){
         return destroy.data.body as IProjectsData[]
-    }else{
-        if(typeof destroy.data.error == 'string'){
-            throw new Error(destroy.data.error)
-        }else{
-            throw destroy.data.error
-        }
-    }
+    
     } catch (error) {
         throw error
     }

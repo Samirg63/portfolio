@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { ref,onMounted } from 'vue';
-import HardSkillCardSingle from './HardSkillCardSingle.vue';
+import HardSkillCardSingle from './SkillCardSingle.vue';
 import type { ErrorResponse } from '@/utils/interfaces';
 import SkillsPlaceholder from './placeholders/SkillsPlaceholder.vue';
 import { useSkillsData } from '@/composables/SkillsComposable';
@@ -10,7 +10,7 @@ import { useSkillsData } from '@/composables/SkillsComposable';
     const targetIsVisible = ref(false)
     let observer;
 
-    const {hardskillsGroupData,loadSkills,loading} = useSkillsData()
+    const {skillsGroupData,loadSkills,loading} = useSkillsData()
     
 
 onMounted(async ()=>{
@@ -46,7 +46,7 @@ onMounted(async ()=>{
         <h2 class="font-semibold text-3xl">Minhas Especialidades:</h2>
         <div  class="grid grid-cols-4 max-md:grid-cols-2 max-sm:grid-cols-1 gap-5 mt-6" ref="target">
             <TransitionGroup v-if="!loading" name="hardskillList" >
-                <template v-for="(skillGroup,index) in hardskillsGroupData" :key="index">
+                <template v-for="(skillGroup,index) in skillsGroupData" :key="index">
                     <HardSkillCardSingle v-if="targetIsVisible" :data="skillGroup" :id="'box'+index"/>
                 </template>
             </TransitionGroup>

@@ -18,7 +18,9 @@ export async function getTagsDataByGroup(groupId:number):Promise<ITagsData[]>{
 }
 
 export async function createTags(itemData:{name:string},groupId:number){
-    const data:IHttpResponse = await axios.post(url,JSON.stringify({tagGroupId:groupId,...itemData}),{
+
+
+    const data:IHttpResponse = await axios.post(url,JSON.stringify({groupId:groupId,...itemData}),{
         headers:{'Content-Type':'application/json'}
     });
     if(data.data.status == 200){

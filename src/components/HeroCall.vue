@@ -39,7 +39,7 @@ const {loadContact,loading:contactLoading, contactData} = useContactData()
                 <p class="font-light">{{ userData?.subtitle }}</p>
                 <div class="flex items-center gap-4 mt-4 w-65 max-md:mx-auto">
                     <a v-if="contactData?.github" class="block w-1/2 dark:bg-zinc-900 bg-gray-100 border-fuchsia-700 text-fuchsia-700 border px-2 py-1 rounded-sm cursor-pointer" target="_blank" :href="formatLink(contactData.github)"><v-icon name="bi-github"/>  Github</a>
-                    <a v-if="contactData?.linkedIn" class="block w-1/2 dark:bg-zinc-900 bg-gray-100 border-blue-700 text-blue-700 border px-2 py-1 rounded-sm cursor-pointer" target="_blank" :href="formatLink(contactData.linkedIn)"><v-icon name="bi-linkedin"/> LinkedIn</a>
+                    <a v-if="contactData?.linkedin" class="block w-1/2 dark:bg-zinc-900 bg-gray-100 border-blue-700 text-blue-700 border px-2 py-1 rounded-sm cursor-pointer" target="_blank" :href="formatLink(contactData.linkedin)"><v-icon name="bi-linkedin"/> LinkedIn</a>
                 </div>
             </div>
         </div>

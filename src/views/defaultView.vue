@@ -2,7 +2,7 @@
   import HeroCall from '../components/HeroCall.vue';
   import ProjectsCards from '../components/ProjectsCards.vue';
   import AboutMe from '../components/AboutMe.vue';
-  import HardskillsCards from '../components/HardskillsCards.vue';
+  import HardskillsCards from '../components/SkillsCards.vue';
   import ContactMe from '../components/ContactMe.vue';
   import { onMounted } from 'vue';
 import { getUserKeyData } from '@/services/userService';

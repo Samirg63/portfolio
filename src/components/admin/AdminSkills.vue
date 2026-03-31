@@ -1,24 +1,24 @@
 <script setup lang="ts">
     import { ref,onMounted, inject } from 'vue';
-    import type { ErrorResponse, generateAlert, IHardskillsCoordinates, IHardskillsData, IHardskillsGroupsData} from '@/utils/interfaces'
-    import { createHardskillsGroups,  deleteHardskillGroup } from '@/services/hardskillsGroupsServices'
-    import { createHardskills, changeOrder, deleteHardskill } from '@/services/hardskillsServices';
+    import type { ErrorResponse, generateAlert, ISkillsCoordinates, ISkillsData, ISkillsGroupData} from '@/utils/interfaces'
+    import { createSkillsGroup,  deleteSkillsGroup } from '@/services/skillsGroupServices'
+    import { createSkills, changeOrder, deleteSkill } from '@/services/skillsServices';
     import { VueDraggableNext as draggable } from 'vue-draggable-next'
     import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
 import { useSkillsData } from '@/composables/SkillsComposable';
 
     const generateAlert:generateAlert = inject('generateAlert')!
 
-    const {loading,hardskillsGroupData,loadSkills,saveSkill, saveSkillGroup, clearCache} = useSkillsData();  
+    const {loading,skillsGroupData,loadSkills,saveSkill, saveSkillGroup, clearCache} = useSkillsData();  
     const creationFormVisibility = ref<boolean>(false)
     const creationHardskillFormVisibility = ref<boolean>(false)
     const maxHardskillsGroups = ref<boolean>(false)
     const disableDraggable = ref<boolean>(false) 
                 
-    const newHardskillGroup = ref<{name:string}>({name:""})
-    const newHardskill = ref<{name:string,icon:string}>({name:'',icon:''})
+    const newSkillGroup = ref<{name:string}>({name:""})
+    const newSkill = ref<{name:string,icon:string}>({name:'',icon:''})
     const editingIcon = ref<string>('')
-    const editingHardskill = ref<IHardskillsCoordinates | null>(null)
+    const editingHardskill = ref<ISkillsCoordinates | null>(null)
         
     
 
@@ -28,7 +28,7 @@ import { useSkillsData } from '@/composables/SkillsComposable';
         try {
             
             await loadSkills();
-            if(hardskillsGroupData.value.length >= 4){
+            if(skillsGroupData.value.length >= 4){
                 maxHardskillsGroups.value = true
             }  
         } catch (error:unknown) {   
@@ -100,8 +100,8 @@ import { useSkillsData } from '@/composables/SkillsComposable';
         const formated = formatIconValue(editingIcon.value)
 
         try {
-            await saveSkill({id:id,icon:formated} as IHardskillsData)
-            hardskillsGroupData.value![groupIndex]!.hardskills![hardskillIndex]!.icon = formated;
+            await saveSkill({id:id,icon:formated} as ISkillsData)
+            skillsGroupData.value![groupIndex]!.skills![hardskillIndex]!.icon = formated;
             generateAlert(true,'Ícone editado com sucesso')
             
             
@@ -112,12 +112,12 @@ import { useSkillsData } from '@/composables/SkillsComposable';
     }
     }
 
-    async function SetEditHardskillCoordinates(groupIndex:number,skillIndex?:number){
+    async function SetEditSkillCoordinates(groupIndex:number,skillIndex?:number){
         closeAllForms()
         if(skillIndex !== undefined){
             editingHardskill.value = {
                 groupIndex:groupIndex,
-                hardSkillsIndex:skillIndex
+                skillsIndex:skillIndex
             }
         }else{
             editingHardskill.value = {
@@ -126,8 +126,8 @@ import { useSkillsData } from '@/composables/SkillsComposable';
         }
     }
 
-    async function handleEditHardskill(groupIndex:number,skillIndex:number){
-        const skill:IHardskillsData = hardskillsGroupData.value![groupIndex]!.hardskills![skillIndex]!;
+    async function handleEditSkill(groupIndex:number,skillIndex:number){
+        const skill:ISkillsData = skillsGroupData.value![groupIndex]!.skills![skillIndex]!;
         try {
             await saveSkill(skill);
 
@@ -142,8 +142,8 @@ import { useSkillsData } from '@/composables/SkillsComposable';
         editingHardskill.value = null
     }
 
-    async function handleEditHardskillGroup(groupIndex:number){
-        const skill:IHardskillsGroupsData = hardskillsGroupData.value![groupIndex]!;
+    async function handleEditSkillGroup(groupIndex:number){
+        const skill:ISkillsGroupData = skillsGroupData.value![groupIndex]!;
         try {
             await saveSkillGroup(skill);
             generateAlert(true,'Nome editado com sucesso')
@@ -162,19 +162,19 @@ import { useSkillsData } from '@/composables/SkillsComposable';
 
 
         try {
-            const create = await createHardskillsGroups(newHardskillGroup.value);
+            const create = await createSkillsGroup(newSkillGroup.value);
             if(create.status == 200){
-                (create.body as IHardskillsGroupsData).hardskills = [];
+                (create.body as ISkillsGroupData).skills = [];
                 clearCache();
-                hardskillsGroupData.value?.push(create.body as IHardskillsGroupsData)
+                skillsGroupData.value?.push(create.body as ISkillsGroupData)
     
                 generateAlert(true,'Grupo criado com sucesso!')
                 creationFormVisibility.value = false;
-                if(hardskillsGroupData.value!.length >= 4){
+                if(skillsGroupData.value!.length >= 4){
                     maxHardskillsGroups.value = true
                 }
 
-                newHardskillGroup.value = {name:""}
+                newSkillGroup.value = {name:""}
             }
         } catch (error:unknown) {
             if((error as ErrorResponse)){
@@ -184,23 +184,23 @@ import { useSkillsData } from '@/composables/SkillsComposable';
         }
     }
 
-    async function createHardskill(e:Event,groupId:number){
+    async function createSkill(e:Event,groupId:number){
         e.preventDefault();
         try {
-            newHardskill.value.icon = formatIconValue(newHardskill.value.icon)
+            newSkill.value.icon = formatIconValue(newSkill.value.icon)
             clearCache()
-            const create = await createHardskills(newHardskill.value,groupId);
+            const create = await createSkills(newSkill.value,groupId);
             if(create.status == 200){
-                hardskillsGroupData.value?.map((data)=>{
+                skillsGroupData.value?.map((data)=>{
                     if(data.id === groupId){
-                        data.hardskills!.push(create.body as IHardskillsData);
+                        data.skills!.push(create.body as ISkillsData);
                     }
                 })
                 
                 //Criar popup de notificação
                 generateAlert(true,'Criado com sucesso!')
                 creationHardskillFormVisibility.value = false;
-                newHardskill.value = {name:'',icon:''};
+                newSkill.value = {name:'',icon:''};
             }
         } catch (error:unknown) {
             if((error as ErrorResponse)){
@@ -210,13 +210,13 @@ import { useSkillsData } from '@/composables/SkillsComposable';
         }
     }
 
-    async function handleSort(e:Event,group:IHardskillsGroupsData){
+    async function handleSort(e:Event,group:ISkillsGroupData){
 
         disableDraggable.value = true
         const indexes = ((e as unknown) as {moved:{newIndex:number,oldIndex:number}}).moved
         
         try {
-            await changeOrder(group.hardskills![indexes.newIndex]!.id,{groupId:group.id,newIndex:indexes.newIndex,oldIndex:indexes.oldIndex});
+            await changeOrder(group.skills![indexes.newIndex]!.id,{groupId:group.id,newIndex:indexes.newIndex+1,oldIndex:indexes.oldIndex+1});
         } catch (error) {
             if((error as ErrorResponse)){
                 generateAlert(false,'Algo deu errado')
@@ -229,14 +229,14 @@ import { useSkillsData } from '@/composables/SkillsComposable';
     }
 
     async function handleDeletehardskill(groupIndex:number,skillIndex:number){
-        const skill:IHardskillsData = hardskillsGroupData.value![groupIndex]!.hardskills![skillIndex]!;
+        const skill:ISkillsData = skillsGroupData.value![groupIndex]!.skills![skillIndex]!;
 
         try {
-            const deleteSkill = await deleteHardskill(skill.id);
+            const destroySkill = await deleteSkill(skill.id);
             clearCache()
-            if(deleteSkill.status == 200){
+            if(destroySkill.status == 200){
                 generateAlert(true,'Especialidade apagada com sucesso')
-                hardskillsGroupData.value![groupIndex]!.hardskills! = hardskillsGroupData.value![groupIndex]!.hardskills!.filter((data)=>data.id !== skill.id)
+                skillsGroupData.value![groupIndex]!.skills! = skillsGroupData.value![groupIndex]!.skills!.filter((data)=>data.id !== skill.id)
             }
         } catch (error) {
             if((error as ErrorResponse)){
@@ -246,15 +246,15 @@ import { useSkillsData } from '@/composables/SkillsComposable';
     }
 
     async function handleDeletehardskillGroup(groupIndex:number){
-        const group:IHardskillsGroupsData = hardskillsGroupData.value![groupIndex]!;
+        const group:ISkillsGroupData = skillsGroupData.value![groupIndex]!;
 
         try {
             clearCache();
-            const deleteGroup = await deleteHardskillGroup(group.id);
+            const deleteGroup = await deleteSkillsGroup(group.id);
             if(deleteGroup.group.status == 200){
                 generateAlert(true,'Grupo apagado com sucesso');
 
-                hardskillsGroupData.value = hardskillsGroupData.value!.filter((data)=> data.id !== group.id);
+                skillsGroupData.value = skillsGroupData.value!.filter((data)=> data.id !== group.id);
                 if(maxHardskillsGroups.value)
                     maxHardskillsGroups.value = false;
             }
@@ -282,22 +282,22 @@ import { useSkillsData } from '@/composables/SkillsComposable';
         >
             <div class="flex flex-col w-8/12">
                     <label for="" class="font-semibold">Nome do grupo:</label>
-                    <input v-model="newHardskillGroup.name" placeholder="Nome..." type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
+                    <input v-model="newSkillGroup.name" placeholder="Nome..." type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
             </div>
             <input type="submit" @click="createGroup($event)" value="Criar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40">
         </form>
         <section>  
             <template v-if="!loading">          
-                <div  class="hardskillWrapper" v-for="(group,groupIndex) in hardskillsGroupData" :key="group.id">         
+                <div  class="hardskillWrapper" v-for="(group,groupIndex) in skillsGroupData" :key="group.id">         
                     <div @click="openContainer($event)" class="hardskillHandler flex items-center justify-between cursor-pointer  py-4  rounded-md duration-200 select-none">
                         <div class="flex items-center gap-2">
                             <v-icon name="bi-chevron-down" class="downArrow duration-200" scale="1.4"/>
-                            <input @click="(e)=>{e.stopPropagation()}" v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == undefined" type="text" v-model="hardskillsGroupData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
+                            <input @click="(e)=>{e.stopPropagation()}" v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.skillsIndex == undefined" type="text" v-model="skillsGroupData![groupIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
                             <h5 v-else class="text-2xl">{{ group.name }}</h5>
                         </div>
-                        <div v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == undefined" class="flex items-center gap-2 actionBtn pr-2">
+                        <div v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.skillsIndex == undefined" class="flex items-center gap-2 actionBtn pr-2">
                             <button @click="(e)=>{editingHardskill=null,e.stopPropagation()}" class="py-px px-0.5 rounded-md duration-200 cursor-pointer bg-red-600  hover:bg-red-800"><v-icon name="io-close-sharp" class="fill-gray-200" scale="1.5"/></button>
-                            <button @click="(e)=>{handleEditHardskillGroup(groupIndex),e.stopPropagation()}" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
+                            <button @click="(e)=>{handleEditSkillGroup(groupIndex),e.stopPropagation()}" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
                         </div>
                         <div v-else class="flex items-center gap-2 actionBtn pr-2">
                             <UPopover mode="click" arrow :content="{align:'center',side:'top'}" :ui="{arrow:'fill-gray-200 '}">
@@ -317,7 +317,7 @@ import { useSkillsData } from '@/composables/SkillsComposable';
                                                 </div>
                                             </template>
                             </UPopover>
-                            <button @click="(e)=>{SetEditHardskillCoordinates(groupIndex);e.stopPropagation()}" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale="1.3"/></button>
+                            <button @click="(e)=>{SetEditSkillCoordinates(groupIndex);e.stopPropagation()}" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale="1.3"/></button>
                         </div>
                     </div>
                 
@@ -330,15 +330,15 @@ import { useSkillsData } from '@/composables/SkillsComposable';
                                     <div class="flex flex-col w-1/2">
                                         <label for="" class="font-semibold">Ícone: (
                                             <small>*Ache os ícone em:<a href="https://oh-vue-icons.js.org" target="_black" class="underline font-bold">Oh Vue Icons</a></small>)</label>
-                                        <input v-model="newHardskill.icon" placeholder="(Ex:co-vue-js / CoVueJs)" type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
+                                        <input v-model="newSkill.icon" placeholder="(Ex:co-vue-js / CoVueJs)" type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
                                     </div>
                                     <div class="flex flex-col w-1/2">
                                         <label for="" class="font-semibold">Nome:</label>
-                                        <input v-model="newHardskill.name" placeholder="Nome..." type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
+                                        <input v-model="newSkill.name" placeholder="Nome..." type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <button  @click="createHardskill($event,group.id)" class="bg-green-700 hover:bg-green-600 duration-200 text-gray-200 py-0.5  rounded-lg cursor-pointer font-semibold w-12">
+                                    <button  @click="createSkill($event,group.id)" class="bg-green-700 hover:bg-green-600 duration-200 text-gray-200 py-0.5  rounded-lg cursor-pointer font-semibold w-12">
                                         <v-icon name="bi-check-lg" scale="1.4"/>
                                     </button>
                                     <button  @click="(e)=>{e.preventDefault();handleHardskillCreationForm()}" class="bg-red-700 hover:bg-red-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-12">
@@ -348,8 +348,8 @@ import { useSkillsData } from '@/composables/SkillsComposable';
                             </form>
                         </div>  
                         <ClientOnly>      
-                            <draggable :disabled="disableDraggable" @change="handleSort($event,group)" v-if="(group.hardskills && group.hardskills!.length > 0)" v-model="group.hardskills" group="hardskills" :item-key="group.id">  
-                                <template v-for="(hardskill,hardskillIndex) in group.hardskills" :key="hardskill.id">
+                            <draggable :disabled="disableDraggable" @change="handleSort($event,group)" v-if="(group.skills && group.skills!.length > 0)" v-model="group.skills" group="skills" :item-key="group.id">  
+                                <template v-for="(hardskill,hardskillIndex) in group.skills" :key="hardskill.id">
                                     <div class="containerItemSingle flex items-center justify-between pl-6 py-1"  >
                                     
                                     <div class="flex items-center gap-2">                                   
@@ -380,12 +380,12 @@ import { useSkillsData } from '@/composables/SkillsComposable';
                                             </template>
                                         </UPopover>
                                         
-                                        <input v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == hardskillIndex" type="text" v-model="hardskillsGroupData![groupIndex]!.hardskills![hardskillIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
+                                        <input v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.skillsIndex == hardskillIndex" type="text" v-model="skillsGroupData![groupIndex]!.skills![hardskillIndex]!.name" class="border rounded-sm px-2 py-1 bg-gray-200 text-zinc-700">
                                         <h6 v-else class="text-lg">{{ hardskill.name }}</h6>
                                     </div>
-                                    <div v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.hardSkillsIndex == hardskillIndex" class="flex items-center gap-2 actionBtn">
+                                    <div v-if="editingHardskill?.groupIndex == groupIndex && editingHardskill?.skillsIndex == hardskillIndex" class="flex items-center gap-2 actionBtn">
                                         <button @click="()=>{editingHardskill=null}" class="py-px px-0.5 rounded-md duration-200 cursor-pointer bg-red-600  hover:bg-red-800"><v-icon name="io-close-sharp" class="fill-gray-200" scale="1.5"/></button>
-                                        <button @click="handleEditHardskill(groupIndex,hardskillIndex)" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
+                                        <button @click="handleEditSkill(groupIndex,hardskillIndex)" class=" py-px px-0.5 rounded-md duration-200 cursor-pointer bg-green-600 hover:bg-green-800"><v-icon name="bi-check-lg" class="fill-gray-200" scale="1.5"/></button>
                                     </div>
                                     <div v-else class="flex items-center gap-2 actionBtn">
                                         <UPopover mode="click" arrow :content="{align:'center',side:'left'}" :ui="{arrow:'fill-gray-200 '}">
@@ -403,7 +403,7 @@ import { useSkillsData } from '@/composables/SkillsComposable';
                                                 </div>
                                             </template>
                                         </UPopover>
-                                        <button @click="SetEditHardskillCoordinates(groupIndex,hardskillIndex)" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale=".9"/></button>
+                                        <button @click="SetEditSkillCoordinates(groupIndex,hardskillIndex)" class="hover:bg-gray-100 dark:hover:bg-zinc-600 p-1 rounded-md duration-200 cursor-pointer"><v-icon name="fa-pen" class="fill-yellow-600" scale=".9"/></button>
                                     </div>
                                     </div>   
                                 </template>

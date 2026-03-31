@@ -168,7 +168,7 @@ import { useContactData } from '@/composables/ContactComposable'
                     <label for="" class="font-semibold">Links:</label>
                     <div class="flex gap-4">
                         <input @change="()=>{contactEdited = true}" placeholder="Github..." type="text" name="gitHub" v-model="contactData!.github" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-1/2 h-10 border pl-2 rounded-lg">
-                        <input @change="()=>{contactEdited = true}" placeholder="LinkedIn" type="text" name="linkedIn" v-model="contactData!.linkedIn" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-1/2 h-10 border pl-2 rounded-lg">
+                        <input @change="()=>{contactEdited = true}" placeholder="LinkedIn" type="text" name="linkedIn" v-model="contactData!.linkedin" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-1/2 h-10 border pl-2 rounded-lg">
                     </div>
                 </div>
                 <input @click="update($event)" type="submit" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold max-md:mx-auto max-md:block max-md:w-1/2">

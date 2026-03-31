@@ -1,15 +1,13 @@
-import type { IHttpResponse, IHardskillsGroupsData } from "@/utils/interfaces";
+import type { IHttpResponse, ISkillsData } from "@/utils/interfaces";
 import axios from "axios";
 
 
-const url:string = import.meta.env.VITE_API_URL+'/hardskillsGroups'
+const url:string = import.meta.env.VITE_API_URL+'/skills'
 
-export async function getHardskillsGroupsData():Promise<IHardskillsGroupsData[]>{
-    const data:IHttpResponse = await axios.get(url);
-          
+export async function getSkillsDataByGroup(groupId:number):Promise<ISkillsData[]>{
+    const data:IHttpResponse = await axios.get(url+`/${groupId}`);
     if(data.data.status == 200){
-        const arr:IHardskillsGroupsData[] = data.data.body as IHardskillsGroupsData[]
-        return arr;
+        return data.data.body as ISkillsData[]
     }else{
         if(typeof data.data.error == 'string'){
             throw new Error(data.data.error)
@@ -19,8 +17,8 @@ export async function getHardskillsGroupsData():Promise<IHardskillsGroupsData[]>
     }
 }
 
-export async function createHardskillsGroups(groupData:{name:string}){
-    const data:IHttpResponse = await axios.post(url,JSON.stringify(groupData),{
+export async function createSkills(itemData:{name:string},groupId:number){
+    const data:IHttpResponse = await axios.post(url,JSON.stringify({groupId:groupId,...itemData}),{
         headers:{'Content-Type':'application/json'}
     });
     if(data.data.status == 200){
@@ -34,7 +32,7 @@ export async function createHardskillsGroups(groupData:{name:string}){
     }
 }
 
-export async function editHardskillGroup(data:IHardskillsGroupsData){
+export async function editSkill(data:ISkillsData){
     const edit = await axios.put(url+`/${data.id}`,JSON.stringify(data),{
         headers:{
             'Content-Type':'application/json'
@@ -51,21 +49,24 @@ export async function editHardskillGroup(data:IHardskillsGroupsData){
     }
 }
 
-export async function deleteHardskillGroup(id:number){
-    const deleteGroup = await axios.delete(url+`/${id}`);
-    if(deleteGroup.status == 200){
-        return {group:deleteGroup.data};
+export async function changeOrder(id:number,body:{newIndex:number,oldIndex:number,groupId:number}){
+    const edit:IHttpResponse = await axios.put(url+`/order/${id}`,JSON.stringify(body),{
+        headers:{'Content-Type':'application/json'}
+    })
+
+    if(edit.data.status == 200){
+        return edit.data;
     }else{
-        if(typeof deleteGroup.data.error == 'string'){
-            throw new Error(deleteGroup.data.error)
+        if(typeof edit.data.error == 'string'){
+            throw new Error(edit.data.error)
         }else{
-            throw deleteGroup.data.error
+            throw edit.data.error
         }
     }
 }
 
-export async function deleteSkillsOnGroup(groupId:number){
-    const deleteSkill = await axios.delete(url+`/allGroup/${groupId}`);
+export async function deleteSkill(id:number){
+    const deleteSkill = await axios.delete(url+`/${id}`);
 
     if(deleteSkill.data.status == 200){
         return deleteSkill.data;

@@ -69,7 +69,7 @@
             </div>
             <div>
                 <label for="" class="font-semibold">LinkedIn:</label>
-                <input placeholder="LinkedIn..." type="text" name="linkedIn" v-model="contactData!.linkedIn" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-full h-10 border pl-2 rounded-lg">
+                <input placeholder="LinkedIn..." type="text" name="linkedIn" v-model="contactData!.linkedin" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-full h-10 border pl-2 rounded-lg">
             </div>
             <div>
                 <label for="" class="font-semibold">*E-mail:</label>

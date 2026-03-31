@@ -33,6 +33,7 @@ import { useTagsData } from '@/composables/TagsComposable';
         try {
             await loadProjects();
             await loadTags();
+
         } catch (error:unknown) {
             if((error as ErrorResponse)){
             console.log((error as ErrorResponse).response.data.error)
@@ -50,7 +51,7 @@ import { useTagsData } from '@/composables/TagsComposable';
     })
 
     function addTag(tag:ITagsData){
-        const group = allTags.value!.filter((info)=> info.id === tag.tagGroupId)
+        const group = allTags.value!.filter((info)=> info.id === tag.groupId)
         group[0]!.tags!.map((rootTag) => {if(rootTag.id == tag.id){rootTag.selected = true}} )    
         handleShowingGroup()
 
@@ -64,9 +65,8 @@ import { useTagsData } from '@/composables/TagsComposable';
     }
 
     function toggleModal(id:number){
-        modalVisibility.value = true;
+        
         selectedProject.value = id;
-
         projectsData.value!.map((project:IProjectsData)=>{
                 if(project.id === id){
                     
@@ -88,6 +88,8 @@ import { useTagsData } from '@/composables/TagsComposable';
                 })
 
                     modalData.value = {...project,images:newImages} as unknown as IModalData
+                    modalVisibility.value = true;
+
             }
         })
     }

@@ -5,7 +5,7 @@
     import { createTags, deleteTags } from '@/services/tagsServices';
     import TagBox from '../TagBox.vue';
     import ListPlaceholder from '../placeholders/ListPlaceholder.vue';
-import { useTagsData } from '@/composables/TagsComposable';
+    import { useTagsData } from '@/composables/TagsComposable';
     const generateAlert:generateAlert = inject('generateAlert')!
 
     const creationFormVisibility = ref<boolean>(false)
@@ -21,7 +21,6 @@ import { useTagsData } from '@/composables/TagsComposable';
 
     try {    
         await loadTags();
-        console.log(tagsData.value)
     } catch (error:unknown) {
         if((error as {response:{data:{error:string}}})){
         console.log((error as {response:{data:{error:string}}}).response.data.error)
@@ -85,7 +84,7 @@ import { useTagsData } from '@/composables/TagsComposable';
             if(create.status == 200){
                 tagsData.value?.map((group)=>{
                     if(group.id === groupId){
-                        group.tags?.push({tagGroupId:groupId,name:newTag.value.name} as ITagsData)
+                        group.tags?.push({groupId:groupId,name:newTag.value.name} as ITagsData)
                 }})
                 clearCache();
                 generateAlert(true,'Tag criada com sucesso!')
@@ -105,7 +104,6 @@ import { useTagsData } from '@/composables/TagsComposable';
         e.preventDefault();
         try {
             const create:{status:number,body:ITagsGroupsData} = await createTagsGroups(newTagsGroup.value) as {status:number,body:ITagsGroupsData};
-            console.log(create)
             if(create.status == 200){
                 clearCache();
                  tagsData.value?.push({...newTagsGroup.value,id:create.body.id,tags:[]}as unknown as ITagsGroupsData)
@@ -172,7 +170,6 @@ import { useTagsData } from '@/composables/TagsComposable';
     }
 
     async function handleDeleteTag(groupIndex:number,tagIndex:number){
-        console.log('deletetag')
         const tag:ITagsData = tagsData.value![groupIndex]!.tags![tagIndex]!;
 
         try {

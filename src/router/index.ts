@@ -11,7 +11,7 @@ import AdminContact from '@/components/admin/AdminContact.vue'
 import AdminHome from '@/components/admin/AdminHome.vue'
 import AdminProjects from '@/components/admin/AdminProjects.vue'
 import AdminTags from '@/components/admin/AdminTags.vue'
-import AdminHardskills from '@/components/admin/AdminHardskills.vue'
+import AdminHardskills from '@/components/admin/AdminSkills.vue'
 import ForgotPassword from '@/views/ForgotPassword.vue' 
 import NotFound from '@/views/NotFound.vue'
 
@@ -58,8 +58,12 @@ const router = createRouter({
               component:AdminTags
             },
             {
-              path:'hardskills',
+              path:'skills',
               component:AdminHardskills
+            },
+            {
+              path:'/**',
+              component:NotFound
             }
           ]
         }
