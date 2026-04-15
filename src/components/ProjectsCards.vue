@@ -95,6 +95,8 @@ import { useTagsData } from '@/composables/TagsComposable';
     }
     
     async function handleSearchByTags(){
+        projectsData.value = []
+        projectsLoading.value = true;
         const selectedTags:number[] = []
         allTags.value!.map((group:ITagsGroupsData)=>{
             group.tags!.map((tag:ITagsData)=>{
@@ -117,7 +119,7 @@ import { useTagsData } from '@/composables/TagsComposable';
             }
         }
         
-
+        projectsLoading.value = false;
     }
 
     function toggleImageModal(){

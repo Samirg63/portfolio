@@ -92,7 +92,10 @@ import { useUserData } from '@/composables/UserComposable';
         </div>
         <div class="space-x-4 max-md:flex">
             <button @click="(e)=>{e.preventDefault();confirmModal = true}" class="bg-gray-200 hover:bg-gray-300 duration-200 text-zinc-800 py-2  rounded-lg cursor-pointer font-semibold w-40 max-md:w-1/2">Alterar a senha</button>
-            <input @click="handleChangeEmail($event)" type="submit" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40 max-md:w-1/2">
+            <button :disabled="loading" @click="handleChangeEmail($event)" type="submit"  class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40 max-md:w-1/2">
+                <vue-spinner-dots v-if="loading" size="24" class="mx-auto"/>
+                <h1 v-else>Editar</h1>
+            </button>
         </div>
     </form>
     <AdminAccountPlaceholder v-else />
@@ -133,7 +136,10 @@ import { useUserData } from '@/composables/UserComposable';
                 </div>
                 <div class="flex items-center gap-2 mt-4">
                     <button @click="()=>{changePasswordModal=false;password='',passwordConfirm=''}" class="py-1 max-md:py-2 px-2 w-1/2 cursor-pointer rounded-md duration-200 bg-gray-200 text-zinc-700 hover:bg-gray-300">Cancelar</button>
-                    <button @click="handleChangePassword" class="py-1 max-md:py-2 px-2 w-1/2 cursor-pointer rounded-md duration-200 text-gray-200 bg-fuchsia-700 hover:bg-fuchsia-800">Confirmar</button>
+                    <button :disabled="loading" @click="handleChangePassword" class="py-1 max-md:py-2 px-2 w-1/2 cursor-pointer rounded-md duration-200 text-gray-200 bg-fuchsia-700 hover:bg-fuchsia-800">
+                        <vue-spinner-dots v-if="loading" size="24" class="mx-auto"/>
+                            <h1 v-else>Confirmar</h1>
+                    </button>
                 </div>
             </div>
         </template>

@@ -284,7 +284,10 @@ import { useSkillsData } from '@/composables/SkillsComposable';
                     <label for="" class="font-semibold">Nome do grupo:</label>
                     <input v-model="newSkillGroup.name" placeholder="Nome..." type="text" name="name" id="" class=" bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800  h-10 border pl-2 rounded-lg">             
             </div>
-            <input type="submit" @click="createGroup($event)" value="Criar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40">
+            <button :disabled="loading" type="submit" @click="createGroup($event)"  class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40">
+                <vue-spinner-dots v-if="loading" size="24" class="mx-auto"/>
+                <h1 v-else>Criar</h1>
+            </button>
         </form>
         <section>  
             <template v-if="!loading">          

@@ -5,7 +5,7 @@
     import AdminContactPlaceholder from '../placeholders/AdminContactPlaceholder.vue'
     import { useContactData } from '@/composables/ContactComposable'
 
-    const {contactData,loadContact,saveContact} = useContactData();
+    const {contactData,loadContact,saveContact,loading} = useContactData();
     const generateAlert:generateAlert = inject('generateAlert')!
 
     onMounted(async()=>{
@@ -80,7 +80,10 @@
                 <input placeholder="Whatsapp..." v-maska="maskOptions" type="text"  name="whatsapp"  v-model="contactData!.whatsapp" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-full h-10 border pl-2 rounded-lg"/>
             </div>
         </div>
-        <input @click="handleEdit" type="submit" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold max-md:ml-auto max-md:block max-md:w-45">
+        <button :disabled="loading" @click="handleEdit" type="submit"  class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold max-md:ml-auto max-md:block max-md:w-45">
+            <vue-spinner-dots v-if="loading" size="24" class="mx-auto"/>
+            <h1 v-else>Editar</h1>
+        </button>
     </form>
     <AdminContactPlaceholder v-else />
 </template>

@@ -225,7 +225,10 @@
                     <input v-model="newTagsGroup.color" type="color" name="color" id="" class="h-12 w-24 cursor-pointer">
                 </div>
             </div>
-            <input type="submit" @click="createGroup($event)" value="Criar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40">
+            <button :disabled="loading" type="submit" @click="createGroup($event)" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2  rounded-lg cursor-pointer font-semibold w-40">
+                <vue-spinner-dots v-if="loading" size="24" class="mx-auto"/>
+                <h1 v-else>Criar</h1>
+            </button>
         </form>
         <section>
 

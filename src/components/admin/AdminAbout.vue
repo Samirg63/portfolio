@@ -143,7 +143,10 @@ import { useAboutData } from '@/composables/AboutComposable'
         </div>
         <div v-if="!loading" class="w-8/12 text-right max-md:w-full h-full">
             <QuillEditor id="admAboutText" @update:content="changeHandler($event)" contentType="html" :content="aboutData?.text" theme="snow" :toolbar="['bold','italic','underline']"  placeholder="Sobre mim..."/>
-            <input type="submit" @click="update" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold mt-4 max-md:w-1/3">
+            <button :disabled="loading" type="submit" @click="update"  class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold mt-4 max-md:w-1/3">
+                <vue-spinner-dots v-if="loading" size="24" class="mx-auto"/>
+                <h1 v-else>Editar</h1>
+            </button>
         </div>
         <AdminAboutPlaceholder v-else />
     </section>

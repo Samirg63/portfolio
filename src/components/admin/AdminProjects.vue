@@ -4,7 +4,7 @@
     //Components
     import AdminProjectSingle from './AdminProjectSingle.vue';
     import TagBox from '../TagBox.vue';
-    import { VueSpinner } from 'vue3-spinners';
+    import { VueSpinner,VueSpinnerDots } from 'vue3-spinners';
 
     //Types
     import type { ErrorResponse, generateAlert, IModalData, IProjectsData, ITagsData, ITagsGroupsData } from '@/utils/interfaces';
@@ -16,11 +16,12 @@
     import ProjectsPlaceholder from '../placeholders/ProjectsPlaceholder.vue';
     import { useProjectsData } from '@/composables/ProjectComposable';
     import { useTagsData } from '@/composables/TagsComposable';
-import { destroyMany } from '@/services/filesServices';
+    import { destroyMany } from '@/services/filesServices';
 
     
 
     const {loading:projectsLoading,loadProjects,saveProject,projectsData,clearCache} = useProjectsData()
+    const deleteLoading = ref<boolean>(false);
     const modalVisibility = ref<boolean>(false)
     const modalData = ref<IModalData>({} as IModalData)
 
@@ -342,22 +343,24 @@ import { destroyMany } from '@/services/filesServices';
     }
 
     async function handleDelete(){
+        deleteLoading.value = true
         try {
-               
-                await deleteProject(modalData.value.id!);
-                await destroyMany(modalData.value.images.map((data)=>data.image))
-
-                projectsData.value = projectsData.value.filter((project)=> project.id !== modalData.value.id!)  
-
-                clearCache();              
-                resetModalData();
-                generateAlert(true,'Projeto apagado com sucesso!');
-            } catch (error:unknown) {
-                if(error as ErrorResponse){
-                    console.log((error as ErrorResponse).response.data)
-                    generateAlert(false,'Erro ao apagar projeto!');
-                }  
-            }
+            
+            await deleteProject(modalData.value.id!);
+            await destroyMany(modalData.value.images.map((data)=>data.image))
+            
+            projectsData.value = projectsData.value.filter((project)=> project.id !== modalData.value.id!)  
+            
+            clearCache();              
+            resetModalData();
+            generateAlert(true,'Projeto apagado com sucesso!');
+        } catch (error:unknown) {
+            if(error as ErrorResponse){
+                console.log((error as ErrorResponse).response.data)
+                generateAlert(false,'Erro ao apagar projeto!');
+            }  
+        }
+        deleteLoading.value = false;
     }
 
     async function removeImage(imageIndex:number){
@@ -563,22 +566,34 @@ import { destroyMany } from '@/services/filesServices';
                         
                     </div>
                     <div class="w-full max-md:hidden">
-                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 py-2 w-full rounded-lg mt-12 font-semibold text-gray-200" @click="handleCreate">Criar</button>
+                        <button :disabled="projectsLoading" v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 py-2 w-full rounded-lg mt-12 font-semibold text-gray-200" @click="handleCreate">
+                            <vue-spinner-dots v-if="projectsLoading" size="24" class="mx-auto"/>
+                            <h1 v-else>Criar</h1>
+                        </button>
                         <div v-else class="flex items-center gap-4">
                             <UPopover mode="click" arrow :content="{align:'center',side:'top'}" :ui="{arrow:'fill-gray-200 '}">
-                                <button class="text-center cursor-pointer dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-zinc-700 bg-zinc-700 hover:bg-zinc-800 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold">Apagar</button>
+                                <button :disabled="deleteLoading" class="text-center cursor-pointer dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-zinc-700 bg-zinc-700 hover:bg-zinc-800 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold">
+                                    <vue-spinner-dots v-if="deleteLoading" size="24" class="mx-auto"/>
+                                    <h1 v-else>Apagar</h1>
+                                </button>
                             
                                 <template #content="{close}">
                                 <div class="p-4 border border-gray-200 rounded-md dark:bg-zinc-800 bg-gray-200">
                                     <h6 class="font-semibold text-md text-center mb-2 leading-5">Tem certeza que deseja apagar o projeto?</h6>
                                     <div class="flex items-center gap-4 justify-center">
                                         <button @click="(()=>{close()})" class="font-semibold dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-zinc-700 bg-zinc-700 hover:bg-zinc-800 text-gray-200 duration-200  rounded-sm cursor-pointer  py-1 px-2 w-1/2">Cancelar</button>
-                                        <button @click="handleDelete" class="font-semibold bg-red-600 duration-200 hover:bg-red-800 rounded-sm cursor-pointer py-1 px-2 w-1/2 text-gray-200 ">Apagar</button>
+                                        <button :disabled="deleteLoading" @click="handleDelete" class="font-semibold bg-red-600 duration-200 hover:bg-red-800 rounded-sm cursor-pointer py-1 px-2 w-1/2 text-gray-200 ">
+                                            <vue-spinner-dots v-if="deleteLoading" size="24" class="mx-auto"/>
+                                            <h1 v-else>Apagar</h1>
+                                        </button>
                                     </div>
                                 </div>
                             </template>
                             </UPopover>
-                            <button class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 py-2 w-full rounded-lg mt-12 font-semibold text-gray-200 " @click="handleEdit">Editar</button>
+                            <button :disabled="projectsLoading" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 py-2 w-full rounded-lg mt-12 font-semibold text-gray-200 " @click="handleEdit">
+                                <vue-spinner-dots v-if="projectsLoading" size="24" class="mx-auto"/>
+                                <h1 v-else>Editar</h1>
+                            </button>
                         </div>
                     </div>
                 </aside>
@@ -631,7 +646,10 @@ import { destroyMany } from '@/services/filesServices';
                         </div>
                     </div>
                      <div class="w-full md:hidden">
-                        <button v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold max-md:hidden" @click="handleCreate" >Criar</button>
+                        <button :disabled="projectsLoading" v-if="action == 'create'" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold max-md:hidden" @click="handleCreate" >
+                            <vue-spinner-dots v-if="projectsLoading" size="24" class="mx-auto"/>
+                            <h1 v-else>Criar</h1>
+                        </button>
                         <div v-else class="flex items-center gap-4">
                             <UPopover mode="click" arrow :content="{align:'center',side:'top'}" :ui="{arrow:'fill-gray-200 '}">
                                 <button class="text-center cursor-pointer dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-zinc-700 bg-zinc-700 hover:bg-zinc-800 text-gray-200 duration-200 py-2 w-full rounded-lg mt-12 font-semibold">Apagar</button>
@@ -646,7 +664,10 @@ import { destroyMany } from '@/services/filesServices';
                                 </div>
                             </template>
                             </UPopover>
-                            <button class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 text-gray-200  duration-200 py-2 w-full rounded-lg mt-12 font-semibold" @click="handleEdit">Editar</button>
+                            <button :disabled="projectsLoading" class="text-center cursor-pointer bg-fuchsia-700 hover:bg-fuchsia-600 text-gray-200  duration-200 py-2 w-full rounded-lg mt-12 font-semibold" @click="handleEdit">
+                                <vue-spinner-dots v-if="projectsLoading" size="24" class="mx-auto"/>
+                                <h1 v-else>Editar</h1>
+                            </button>
                         </div>
                     </div>
                 </main>

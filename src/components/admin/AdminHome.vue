@@ -3,14 +3,15 @@
     import type { IUserData,IContactData, generateAlert, ErrorResponse } from '@/utils/interfaces'
     import {  getUserKeyData, editSecondaryPortrait, removeImage } from '@/services/userService'
     import { VueSpinner } from 'vue3-spinners'
-import AdminHomePlaceholder from '../placeholders/AdminHomePlaceholder.vue'
-import { useUserData } from '@/composables/UserComposable'
-import { useContactData } from '@/composables/ContactComposable'
+    import AdminHomePlaceholder from '../placeholders/AdminHomePlaceholder.vue'
+    import { useUserData } from '@/composables/UserComposable'
+    import { useContactData } from '@/composables/ContactComposable'
+    import { VueSpinnerDots } from 'vue3-spinners';
 
     const generateAlert:generateAlert = inject('generateAlert')!
     
-    const {loadUser,saveUser,userData} = useUserData()
-    const {loadContact,saveContact,contactData} = useContactData()
+    const {loadUser,saveUser,userData,loading:userLoading} = useUserData()
+    const {loadContact,saveContact,contactData,loading:contactLoading} = useContactData()
 
    
     
@@ -170,8 +171,11 @@ import { useContactData } from '@/composables/ContactComposable'
                         <input @change="()=>{contactEdited = true}" placeholder="Github..." type="text" name="gitHub" v-model="contactData!.github" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-1/2 h-10 border pl-2 rounded-lg">
                         <input @change="()=>{contactEdited = true}" placeholder="LinkedIn" type="text" name="linkedIn" v-model="contactData!.linkedin" class="bg-gray-200 border-zinc-900 text-zinc-800 placeholder:text-zinc-800 w-1/2 h-10 border pl-2 rounded-lg">
                     </div>
-                </div>
-                <input @click="update($event)" type="submit" value="Editar" class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold max-md:mx-auto max-md:block max-md:w-1/2">
+                </div>              
+                <button :disabled="userLoading||contactLoading"  @click="update($event)" type="submit"  class="bg-fuchsia-700 hover:bg-fuchsia-600 duration-200 text-gray-200 py-2 px-10 rounded-lg cursor-pointer font-semibold max-md:mx-auto max-md:block max-md:w-1/2">
+                    <vue-spinner-dots v-if="userLoading||contactLoading" size="24" class="mx-12"/>
+                    <h1 v-else>Editar</h1>
+                </button>
             </div>
             <AdminHomePlaceholder v-else/>
         </form>
