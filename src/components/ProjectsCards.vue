@@ -322,11 +322,11 @@ import { useTagsData } from '@/composables/TagsComposable';
                 <aside class="max-md:w-full border-r p-6 border-gray-400 min-w-85 w-5/12 h-full max-md:h-2/3 flex flex-col justify-center align-center shrink-0">
                     <div>
                         <div @click="toggleImageModal" id="carroussel" class=" min-w-75 w-[95%] h-50 mx-auto flex flex-nowrap overflow-x-hidden cursor-pointer">
-                            <div v-for="(img) in modalData.images" :key="img.id" class="w-full object-contain shrink-0">
-                                <img  :src="img.image.url" class=" h-full  mx-auto" />
+                            <div v-for="(img) in modalData.images" :key="img.id" class="w-full object-contain shrink-0 overflow-y-hidden">
+                                <img  :src="img.image.url" class=" mx-auto" />
                             </div>
                         </div>
-                        <div id="bullets" class="flex items-center justify-center gap-3 my-4">
+                        <div id="bullets" class="flex items-center justify-center gap-3 my-4 ">
                             <template v-for="(img,index) in modalData.images" :key="img.id">
                                 <div @click="bulletHandler(index)" class="w-3 h-3 max-md:w-8  cursor-pointer rounded-full bg-zinc-950" :class="(img.selected)&&'selected'"></div>     
                             </template>

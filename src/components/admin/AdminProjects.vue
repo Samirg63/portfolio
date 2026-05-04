@@ -525,7 +525,7 @@
                             <div id="carroussel" class="w-full h-full gap-px flex flex-nowrap overflow-x-hidden relative justify-baseline">
                                     <VueSpinner v-if="uploadLoading" color="#e5e7eb" size="60" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-5"/>
                                     <template v-else>
-                                        <div  v-for="(img,index) in modalData.images" :key="index" class="imgContainer w-full h-full shrink-0 object-contain  overflow-x-hidden relative ">
+                                        <div  v-for="(img,index) in modalData.images" :key="index" class="imgContainer w-full h-full shrink-0 object-contain  overflow-hidden relative ">
                                             <div class="absolute right-2 top-2 flex items-center gap-2">
                                                 <button @click="favoriteImage(index)" id="trashBtn" class="duration-200  bg-zinc-800/50 p-1 rounded-full cursor-pointer opacity-0 pointer-events-none">
                                                     <v-icon name="md-favorite"  scale="1.2" class="fill-gray-200" :class="(index == modalData.coverImage)? 'fill-red-400' : 'fill-gray-200'"/>
@@ -534,7 +534,7 @@
                                                     <v-icon name="bi-trash-fill"  scale="1.2" class="fill-gray-200"/>
                                                 </button> 
                                             </div>
-                                            <img  :src="img.image.url" class=" h-full object-contain mx-auto" />
+                                            <img  :src="img.image.url" class="object-contain mx-auto" />
                                         </div>
                                     </template>                              
 
